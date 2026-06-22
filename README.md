@@ -24,7 +24,7 @@ Any coding agent ships it over MCP — and nothing ever leaves your infrastructu
 
 [**Quickstart**](#-quickstart) · [**The loop**](#the-loop) · [**Features**](#-features) · [**Connect an agent**](#-connect-a-coding-agent-mcp) · [**Architecture**](#-architecture)
 
-🌐 **Website:** _coming soon_ &nbsp;·&nbsp; ⭐ **Star the repo** if Burrow is useful to you.
+🌐 **Website:** [**Link here**](https://burrow.nirnaypatel.com) &nbsp;·&nbsp; ⭐ **Star the repo** if Burrow is useful to you.
 
 </div>
 
