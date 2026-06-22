@@ -1,0 +1,30 @@
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--agent-avatar-radius);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  box-shadow: 0 0 0 2px var(--ring, var(--color-border-strong));
+  user-select: none;
+}
+/* Blue = "motion of work" (the lifecycle in_progress hue, reused) */
+.working {
+  box-shadow: 0 0 0 2px var(--status-in-progress-fg);
+  animation: agentPulse var(--thinking-duration) ease-in-out infinite;
+}
+.idle {
+  opacity: 0.6;
+}
+@keyframes agentPulse {
+  0%, 100% { box-shadow: 0 0 0 2px var(--status-in-progress-fg); }
+  50% { box-shadow: 0 0 0 2px var(--status-in-progress-fg), 0 0 0 5px var(--status-in-progress-bg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .working { animation: none; }
+}

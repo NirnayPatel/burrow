@@ -1,0 +1,159 @@
+/*
+ * Base styles — built only on tokens.css. No raw hex here, ever.
+ * Burrow design system — calm editorial, warm neutrals, one green accent.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background: var(--color-bg);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Offset content for the fixed sidebar rail (UX review #2). AppNav toggles this
+   class on mount, so only authed pages shift — sign-in / onboarding / marketing
+   never render AppNav and stay full-width. */
+body.app-has-sidebar {
+  padding-left: var(--sidebar-w);
+}
+@media (max-width: 720px) {
+  body.app-has-sidebar {
+    padding-left: 0; /* rail collapses to a top strip at narrow widths */
+  }
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+figure {
+  margin: 0;
+}
+
+h1 {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+
+h2 {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  line-height: 1.3;
+  letter-spacing: var(--tracking-tight);
+}
+
+h3 {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  line-height: 1.45;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+
+a:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+button {
+  font: inherit;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* Visible focus everywhere — never outline: none without a replacement */
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--color-accent-subtle);
+  color: var(--color-text);
+}
+
+/* ---------------------------------------------------------------- */
+/* BlockNote theme bridging.                                         */
+/* tokens.css maps --bn-* variables on .bn-container, but BlockNote's */
+/* own stylesheet sets light/dark defaults on                          */
+/* .bn-container[data-color-scheme=...] which wins on specificity.     */
+/* Re-assert the token mappings at that specificity so the editor —    */
+/* including Mantine popovers/menus — follows our palette in BOTH      */
+/* themes (no white popovers on a dark canvas).                        */
+/* ---------------------------------------------------------------- */
+
+.bn-container[data-color-scheme="light"],
+.bn-container[data-color-scheme="dark"] {
+  --bn-font-family: var(--font-sans);
+  --bn-border-radius: var(--radius-md);
+
+  --bn-colors-editor-background: var(--color-bg);
+  --bn-colors-editor-text: var(--color-text);
+
+  --bn-colors-menu-background: var(--color-surface);
+  --bn-colors-menu-text: var(--color-text);
+  --bn-colors-hovered-background: var(--color-surface-sunken);
+  --bn-colors-hovered-text: var(--color-text);
+  --bn-colors-selected-background: var(--color-accent-subtle);
+  --bn-colors-selected-text: var(--color-text);
+  --bn-colors-disabled-background: var(--color-surface-sunken);
+  --bn-colors-disabled-text: var(--color-text-muted);
+
+  --bn-colors-tooltip-background: var(--color-surface);
+  --bn-colors-tooltip-text: var(--color-text-secondary);
+
+  --bn-colors-border: var(--color-border);
+  --bn-colors-side-menu: var(--color-text-muted);
+  --bn-colors-shadow: var(--color-border);
+
+  --bn-colors-highlights-gray-background: var(--status-draft-bg);
+  --bn-colors-highlights-gray-text: var(--status-draft-fg);
+  --bn-colors-highlights-yellow-background: var(--color-warning-bg);
+  --bn-colors-highlights-yellow-text: var(--color-warning);
+  --bn-colors-highlights-green-background: var(--color-success-bg);
+  --bn-colors-highlights-green-text: var(--color-success);
+  --bn-colors-highlights-blue-background: var(--status-in-progress-bg);
+  --bn-colors-highlights-blue-text: var(--status-in-progress-fg);
+  --bn-colors-highlights-purple-background: var(--status-done-bg);
+  --bn-colors-highlights-purple-text: var(--status-done-fg);
+  --bn-colors-highlights-red-background: var(--color-danger-bg);
+  --bn-colors-highlights-red-text: var(--color-danger);
+}

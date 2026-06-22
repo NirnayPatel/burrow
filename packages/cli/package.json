@@ -1,0 +1,22 @@
+{
+  "name": "@burrow/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": { "burrow": "./dist/index.js" },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch --preserveWatchOutput",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

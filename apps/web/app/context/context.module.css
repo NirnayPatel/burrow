@@ -1,0 +1,275 @@
+/* ── Context page ───────────────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.headerText {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.heading {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.subtext {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  max-width: 60ch;
+}
+
+.headerActions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+/* ── Hidden file input ──────────────────────────────────────────────────── */
+
+.fileInputHidden {
+  display: none;
+}
+
+/* ── Upload panel ───────────────────────────────────────────────────────── */
+
+.uploadPanel {
+  margin-bottom: var(--space-5);
+  padding: var(--space-6);
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-lg);
+}
+
+.uploadInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+}
+
+.uploadIcon {
+  color: var(--color-text-muted);
+}
+
+.uploadHint {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.uploadActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* ── Edit / create form ─────────────────────────────────────────────────── */
+
+.editForm {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.editRow {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.titleInput {
+  flex: 1;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.bodyArea {
+  width: 100%;
+  resize: vertical;
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  line-height: var(--leading-base);
+  min-height: 200px;
+}
+
+.bodyArea:focus {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 0;
+  border-color: var(--color-accent);
+}
+
+.editActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* ── Empty state actions ─────────────────────────────────────────────────── */
+
+.emptyActions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+/* ── Doc list ───────────────────────────────────────────────────────────── */
+
+.docList {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.docRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition:
+    box-shadow var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.docRow:hover {
+  box-shadow: var(--shadow-sm);
+  border-color: var(--color-border-strong);
+}
+
+.docMain {
+  flex: 1;
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.docTitleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.docTitle {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.docSubRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.docSource {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 28ch;
+}
+
+.sourceIcon {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+/* ── Kind chip ──────────────────────────────────────────────────────────── */
+
+.kindChip {
+  display: inline-block;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Doc kind is a taxonomy, not a lifecycle state. Mapping each kind onto the
+   status palette (in_progress blue, approved green, warning amber, …) competed
+   with those hues' real meaning (05-DESIGN §3). All kinds share one neutral
+   monochrome chip; the label carries the category. */
+.kind_company,
+.kind_product,
+.kind_personas,
+.kind_strategy,
+.kind_ways_of_working,
+.kind_other {
+  background: var(--color-surface-sunken);
+  color: var(--color-text-secondary);
+}
+
+/* ── Embedded cue ───────────────────────────────────────────────────────── */
+
+.embeddedYes {
+  font-size: var(--text-xs);
+  color: var(--color-success);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+}
+
+.embeddedNo {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* ── Doc meta / actions ─────────────────────────────────────────────────── */
+
+.docMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.docDate {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.docActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* ── Skeleton rows ──────────────────────────────────────────────────────── */
+
+.docSkeletonRow {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}

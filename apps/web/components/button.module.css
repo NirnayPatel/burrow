@@ -1,0 +1,115 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 36px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.button:disabled {
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Primary — accent fill */
+.primary {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.primary:hover {
+  background: var(--color-accent-hover);
+}
+
+.primary:disabled {
+  opacity: 0.45;
+}
+
+/* Secondary — surface + border */
+.secondary {
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+}
+
+.secondary:hover {
+  background: var(--color-surface-sunken);
+}
+
+.secondary:disabled {
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+}
+
+/* Ghost — no fill */
+.ghost {
+  background: transparent;
+  color: var(--color-accent);
+  padding: 0 var(--space-3);
+}
+
+.ghost:hover {
+  background: var(--color-accent-subtle);
+}
+
+.ghost:disabled {
+  color: var(--color-text-muted);
+}
+
+/* Danger — ghost by default; fill is reserved for confirm dialogs */
+.danger {
+  background: transparent;
+  color: var(--color-danger);
+  padding: 0 var(--space-3);
+}
+
+.danger:hover {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-hover);
+}
+
+.danger:disabled {
+  color: var(--color-text-muted);
+}
+
+.danger:focus-visible {
+  outline-color: var(--color-danger);
+}
+
+/* Inline spinner for busy state */
+.spinner {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border-radius: var(--radius-full);
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  opacity: 0.8;
+  animation: spin 720ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+    border-top-color: currentColor;
+    opacity: 0.5;
+  }
+}

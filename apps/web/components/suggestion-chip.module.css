@@ -1,0 +1,54 @@
+.chip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-ai-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+}
+.spark {
+  color: var(--color-ai-fg);
+  font-size: 13px;
+}
+.text {
+  flex: 1;
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  line-height: 1.5;
+}
+.act {
+  flex-shrink: 0;
+  border: 1px solid var(--color-accent);
+  background: none;
+  color: var(--color-accent);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  padding: 3px var(--space-3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.act:hover:not(:disabled) {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+.act:disabled {
+  opacity: 0.5;
+}
+.act:focus-visible,
+.dismiss:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+.dismiss {
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 2px;
+}
+.dismiss:hover {
+  color: var(--color-text);
+}

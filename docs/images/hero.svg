@@ -1,0 +1,122 @@
+<svg width="1200" height="700" viewBox="0 0 1200 700" fill="none" xmlns="http://www.w3.org/2000/svg" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs>
+    <clipPath id="win"><rect x="40" y="92" width="1120" height="568" rx="14"/></clipPath>
+  </defs>
+
+  <!-- canvas -->
+  <rect width="1200" height="700" rx="20" fill="#faf9f7"/>
+
+  <!-- title band -->
+  <g transform="translate(48,30)">
+    <circle cx="13" cy="14" r="13" fill="#2a7d5f"/>
+    <path d="M7 17 q6 -10 12 0" stroke="#ffffff" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <text x="36" y="20" font-size="22" font-weight="700" fill="#1c1b17" letter-spacing="-0.4">Burrow</text>
+    <text x="132" y="20" font-size="15" fill="#6f6b61">— where specs become shipped work</text>
+    <g transform="translate(905,2)">
+      <rect width="207" height="26" rx="13" fill="#e7f2ec"/>
+      <text x="103" y="17" font-size="12.5" font-weight="600" fill="#2a7d5f" text-anchor="middle">Open source · self-host · your keys</text>
+    </g>
+  </g>
+
+  <!-- app window -->
+  <rect x="40" y="92" width="1120" height="568" rx="14" fill="#ffffff" stroke="#e7e4de" stroke-width="1.5"/>
+  <g clip-path="url(#win)">
+    <!-- ============ SIDEBAR ============ -->
+    <rect x="40" y="92" width="216" height="568" fill="#faf9f7"/>
+    <line x1="256" y1="92" x2="256" y2="660" stroke="#e7e4de" stroke-width="1.5"/>
+    <text x="72" y="128" font-size="16" font-weight="700" fill="#1c1b17" letter-spacing="-0.3">Burrow</text>
+    <!-- search -->
+    <rect x="64" y="144" width="168" height="32" rx="8" fill="#f3f1ed" stroke="#e7e4de"/>
+    <text x="78" y="165" font-size="12.5" fill="#6f6b61">Search…</text>
+    <rect x="184" y="151" width="44" height="18" rx="4" fill="#ffffff" stroke="#e7e4de"/>
+    <text x="206" y="164" font-size="10.5" fill="#5b5850" text-anchor="middle">Cmd K</text>
+
+    <!-- group WORK -->
+    <text x="72" y="206" font-size="10.5" font-weight="600" letter-spacing="1" fill="#6f6b61">WORK</text>
+    <text x="72" y="230" font-size="13.5" fill="#5b5850">Home</text>
+    <text x="72" y="256" font-size="13.5" fill="#5b5850">Chat</text>
+    <rect x="60" y="266" width="176" height="26" rx="7" fill="#e7f2ec"/>
+    <text x="72" y="283" font-size="13.5" font-weight="600" fill="#1c1b17">Specs</text>
+    <text x="72" y="309" font-size="13.5" fill="#5b5850">Roadmap</text>
+    <text x="72" y="335" font-size="13.5" fill="#5b5850">Goals</text>
+    <!-- group INSIGHT -->
+    <text x="72" y="375" font-size="10.5" font-weight="600" letter-spacing="1" fill="#6f6b61">INSIGHT</text>
+    <text x="72" y="399" font-size="13.5" fill="#5b5850">Feedback</text>
+    <text x="72" y="425" font-size="13.5" fill="#5b5850">Market</text>
+    <text x="72" y="451" font-size="13.5" fill="#5b5850">Context</text>
+    <!-- group ORG -->
+    <text x="72" y="491" font-size="10.5" font-weight="600" letter-spacing="1" fill="#6f6b61">ORG</text>
+    <text x="72" y="515" font-size="13.5" fill="#5b5850">Teams</text>
+    <text x="72" y="541" font-size="13.5" fill="#5b5850">Automations</text>
+    <text x="72" y="567" font-size="13.5" fill="#5b5850">Library</text>
+
+    <!-- ============ MAIN ============ -->
+    <!-- breadcrumb -->
+    <text x="288" y="124" font-size="12.5" fill="#6f6b61">Specs</text>
+    <text x="324" y="124" font-size="12.5" fill="#6f6b61">›</text>
+    <text x="338" y="124" font-size="12.5" fill="#5b5850">SPEC-12</text>
+
+    <!-- title + status + presence -->
+    <text x="288" y="160" font-size="24" font-weight="700" fill="#1c1b17" letter-spacing="-0.5">Onboarding redesign</text>
+    <rect x="586" y="142" width="88" height="24" rx="12" fill="#e3edfb"/>
+    <text x="630" y="158" font-size="12" font-weight="600" fill="#175cd3" text-anchor="middle">In review</text>
+    <!-- humans (round) -->
+    <circle cx="812" cy="153" r="15" fill="#2a7d5f"/><text x="812" y="158" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">M</text>
+    <circle cx="838" cy="153" r="15" fill="#175cd3"/><text x="838" y="158" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">R</text>
+    <!-- agent (square, working ring) -->
+    <rect x="852" y="139" width="28" height="28" rx="5" fill="#1f1e1a"/>
+    <rect x="849.5" y="136.5" width="33" height="33" rx="7" fill="none" stroke="#175cd3" stroke-width="2"/>
+    <text x="866" y="158" font-size="10" font-weight="700" fill="#57b98c" text-anchor="middle">CC</text>
+
+    <!-- editor body -->
+    <text x="288" y="212" font-size="14.5" fill="#5b5850">Reduce time-to-value for new users by simplifying the</text>
+    <text x="288" y="236" font-size="14.5" fill="#5b5850">first-run flow to three steps.</text>
+    <text x="288" y="276" font-size="14.5" fill="#1c1b17"><tspan font-weight="700">Goal:</tspan> ≥60% of signups finish onboarding within 10 min.</text>
+    <text x="288" y="316" font-size="14.5" fill="#5b5850">New order: write a spec, invite a teammate, generate a</text>
+    <text x="288" y="340" font-size="14.5" fill="#5b5850">breakdown. Connecting a tracker becomes optional.</text>
+    <!-- a presence caret -->
+    <rect x="566" y="326" width="2" height="18" fill="#175cd3"/>
+    <rect x="568" y="326" width="34" height="14" rx="3" fill="#175cd3"/>
+    <text x="585" y="337" font-size="9.5" fill="#fff" text-anchor="middle">Raj</text>
+
+    <!-- ============ AI RAIL ============ -->
+    <line x1="912" y1="100" x2="912" y2="660" stroke="#e7e4de" stroke-width="1.5"/>
+    <path transform="translate(942,123)" d="M0,-6 L1.5,-1.5 L6,0 L1.5,1.5 L0,6 L-1.5,1.5 L-6,0 L-1.5,-1.5 Z" fill="#2a7d5f"/>
+    <text x="954" y="128" font-size="13" font-weight="700" fill="#1c1b17">Assistant</text>
+    <!-- AI surface card -->
+    <rect x="936" y="146" width="200" height="150" rx="10" fill="#e7f2ec" stroke="#cfe6da"/>
+    <text x="952" y="172" font-size="11.5" font-weight="600" fill="#2a7d5f">STATE OF THIS SPEC</text>
+    <text x="952" y="196" font-size="12" fill="#1c1b17">A 3-step onboarding to lift</text>
+    <text x="952" y="213" font-size="12" fill="#1c1b17">activation; metric still open.</text>
+    <!-- amber insight chip (never red) -->
+    <rect x="952" y="228" width="172" height="26" rx="13" fill="#fdf3df"/>
+    <g transform="translate(966,235)" stroke="#9a6700" stroke-width="1.6" fill="#9a6700" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="0" y1="-6" x2="0" y2="6"/>
+      <path d="M0,-6 L7,-3.5 L0,-1 Z"/>
+    </g>
+    <text x="978" y="245" font-size="11.5" fill="#9a6700">No success metric defined</text>
+    <text x="952" y="278" font-size="11.5" fill="#6f6b61">2 open questions</text>
+
+    <!-- agents at work -->
+    <rect x="936" y="320" width="200" height="64" rx="10" fill="#ffffff" stroke="#e7e4de"/>
+    <rect x="950" y="334" width="22" height="22" rx="4" fill="#1f1e1a"/>
+    <text x="961" y="349" font-size="8.5" font-weight="700" fill="#57b98c" text-anchor="middle">CC</text>
+    <text x="982" y="343" font-size="11.5" font-weight="600" fill="#1c1b17">claude-code</text>
+    <circle cx="1120" cy="339" r="4" fill="#175cd3"/>
+    <text x="982" y="361" font-size="10.5" fill="#6f6b61">picked up SPEC-12.2 · building</text>
+
+    <!-- breakdown chips bottom-left -->
+    <text x="288" y="396" font-size="12" font-weight="600" fill="#6f6b61">BREAKDOWN · 4 tasks</text>
+    <g font-size="11.5">
+      <rect x="288" y="408" width="300" height="30" rx="7" fill="#f3f1ed"/>
+      <circle cx="306" cy="423" r="4" fill="#1b7a45"/>
+      <text x="320" y="427" fill="#1c1b17">Reorder checklist steps</text>
+      <text x="556" y="427" fill="#1b7a45" font-weight="600">done</text>
+
+      <rect x="288" y="444" width="300" height="30" rx="7" fill="#f3f1ed"/>
+      <circle cx="306" cy="459" r="4" fill="#175cd3"/>
+      <text x="320" y="463" fill="#1c1b17">Seeded demo spec to act on</text>
+      <text x="540" y="463" fill="#175cd3" font-weight="600">in progress</text>
+    </g>
+  </g>
+</svg>

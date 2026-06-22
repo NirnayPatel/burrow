@@ -1,0 +1,18 @@
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-secondary);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 0 2px var(--ring, var(--color-border-strong));
+  user-select: none;
+}
+.idle {
+  opacity: 0.5;
+}

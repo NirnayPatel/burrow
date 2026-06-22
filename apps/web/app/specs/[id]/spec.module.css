@@ -1,0 +1,576 @@
+/* Spec page + its panels (editor, sign-off, breakdown) — the money screen.
+   Two-zone layout: editor as hero, Sign-off + Breakdown as side panels.
+   Side-by-side >=1200px, stacked below. No horizontal scroll at any width. */
+
+.loading {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* ---- Spec header ------------------------------------------------- */
+
+.specHeader {
+  margin-bottom: var(--space-5);
+}
+
+/* Header recede on scroll (UX review #8). Once the user scrolls into the doc,
+   the secondary chrome (lifecycle row + presence) collapses so the doc owns the
+   viewport — Notion-style. The title row stays so orientation never vanishes.
+   The lifecycle row animates closed; reduced-motion users jump to the end
+   state (transition disabled below). */
+.lifecycleRow {
+  overflow: hidden;
+  transition:
+    max-height 0.18s var(--ease-out),
+    opacity 0.18s var(--ease-out),
+    margin-top 0.18s var(--ease-out);
+  max-height: 3rem;
+  opacity: 1;
+}
+
+.specHeaderReceded .lifecycleRow {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+}
+
+/* Presence recedes too — shrinks to a quiet footprint so the doc dominates. */
+.specHeaderReceded .presenceRow {
+  opacity: 0.6;
+  transition: opacity 0.18s var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lifecycleRow,
+  .specHeaderReceded .presenceRow {
+    transition: none;
+  }
+}
+
+.titleRow {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  min-width: 0;
+}
+
+.displayId {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* Human presence + agent presence sit side by side — agents are teammates
+   rendered right next to the humans (11-DESIGN §3c-i, §P4). */
+.presenceRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.agentStack {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* h1-scale inline title — borderless Input variant supplies the chrome */
+.titleInput {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+
+.lifecycleRow {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  margin-top: var(--space-3);
+}
+
+/* Read mode: title as static text, matching the editable Input's h1 scale so
+   flipping modes doesn't jump the layout. */
+.titleStatic {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+
+/* ---- Initiative picker (slash "/link initiative", #5) ------------ */
+
+.pickerField {
+  margin: var(--space-3) 0;
+}
+
+/* ---- Read / Edit toggle ------------------------------------------ */
+
+/* A quiet segmented control. Sits in the title row; the inactive option reads
+   as muted text, the active one gets a calm filled pill. */
+.modeToggle {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 2px;
+  padding: 2px;
+  background: var(--color-surface-sunken);
+  border-radius: var(--radius-full);
+}
+
+.modeOption {
+  appearance: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  border-radius: var(--radius-full);
+  transition: color 0.12s var(--ease-out), background 0.12s var(--ease-out);
+}
+
+.modeOption:hover {
+  color: var(--color-text-secondary);
+}
+
+.modeOption[data-active="true"] {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.modeOption:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ---- Two-zone body ----------------------------------------------- */
+
+.body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+@media (min-width: 1200px) {
+  .body {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+  }
+}
+
+.hero {
+  min-width: 0;
+}
+
+/* Read mode is document-first: single column, the doc centered on its measure,
+   no side rail. The header toggle is the way back to Edit. */
+.bodyReading {
+  display: block;
+}
+
+.bodyReading .hero {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.side {
+  min-width: 0;
+  display: grid;
+  gap: var(--space-5);
+}
+
+/* On wide layouts the side panels track the editor as you scroll the prose */
+@media (min-width: 1200px) {
+  .side {
+    position: sticky;
+    top: var(--space-5);
+  }
+}
+
+/* ---- Editor zone + connection indicator -------------------------- */
+
+.editorZone {
+  min-width: 0;
+  /* Hold vertical space so a short Spec + AI starter never reads as a sliver of
+     content above dead whitespace (11-DESIGN §3d "dead-whitespace fix"). */
+  min-height: 60vh;
+}
+
+/* Read mode rhythm: the same live BlockNote editor, but calmer. Generous
+   line-height + block spacing and the 860px editorial measure (05-DESIGN §4).
+   Scoped to the editor container so edit mode is untouched; the :global hooks
+   reach BlockNote's contentEditable (.bn-editor) and its blocks (.bn-block). */
+.readMode :global(.bn-editor) {
+  max-width: 860px;
+  line-height: var(--leading-loose, 1.85);
+}
+
+.readMode :global(.bn-block-content) {
+  line-height: var(--leading-loose, 1.85);
+}
+
+/* Roomier vertical rhythm between blocks for a document-like read. */
+.readMode :global(.bn-block-group .bn-block-outer) {
+  margin-top: var(--space-2);
+}
+
+/* Quiet connection indicator: a dot + plain-language label, replacing the raw
+   "connecting · editing as X" string (05-DESIGN §6) */
+.connection {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-3);
+}
+
+.connectionDot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.connection[data-state="online"] .connectionDot {
+  background: var(--color-success);
+}
+
+.connection[data-state="error"] {
+  color: var(--color-danger);
+}
+
+.connection[data-state="error"] .connectionDot {
+  background: var(--color-danger);
+}
+
+.connection[data-state="pending"] .connectionDot {
+  background: var(--color-warning);
+  animation: connection-pulse 1.4s var(--ease-out) infinite;
+}
+
+@keyframes connection-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connection[data-state="pending"] .connectionDot {
+    animation: none;
+  }
+}
+
+/* ---- Shared panel chrome ----------------------------------------- */
+
+.panel {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-4);
+}
+
+.panelHeader {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+}
+
+.panelMeta {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  color: var(--color-text-secondary);
+}
+
+.panelActions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.error {
+  font-size: var(--text-sm);
+  color: var(--color-danger);
+  margin-top: var(--space-2);
+}
+
+/* ---- Sign-off panel ---------------------------------------------- */
+
+.signoffForm {
+  margin-top: var(--space-3);
+  display: grid;
+  gap: var(--space-2);
+}
+
+.commentInput {
+  width: 100%;
+}
+
+.signoffActions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.timeline {
+  list-style: none;
+  padding: 0;
+  margin-top: var(--space-4);
+  display: grid;
+  gap: var(--space-1);
+}
+
+/* Version divider rows group entries by the Spec version they were cast
+   against (05-DESIGN §5) */
+.versionDivider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.versionDivider:first-child {
+  margin-top: 0;
+}
+
+.versionDivider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.versionLabel {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.timelineEmpty {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin-top: var(--space-3);
+  line-height: var(--leading-base);
+}
+
+/* ---- Breakdown panel --------------------------------------------- */
+
+.taskList {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.taskItem {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.taskStatus {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ---- Tabbed intelligence panel (11-DESIGN §3d) ------------------- */
+
+.tabs {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.tabList {
+  display: flex;
+  gap: var(--space-1);
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.tab {
+  appearance: none;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  transition: color 0.12s var(--ease-out);
+}
+
+.tab:hover {
+  color: var(--color-text-secondary);
+}
+
+.tab[data-state="active"] {
+  color: var(--color-text);
+  border-bottom-color: var(--color-accent);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Small spark + count when AI has something on a tab */
+.tabSpark {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-ai-fg);
+  font-variant-numeric: tabular-nums;
+}
+
+.tabPanel:focus-visible {
+  outline: none;
+}
+
+/* ---- Editor AI starter (11-DESIGN §3b-ii) ------------------------ */
+
+.starter {
+  margin-bottom: var(--space-4);
+}
+
+.starterHead {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+.starterCopy {
+  margin: var(--space-1) 0 var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-base);
+}
+
+.starterInput {
+  width: 100%;
+  font-family: inherit;
+  font-size: var(--text-base);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+}
+
+.starterInput:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+  border-color: var(--color-accent);
+}
+
+.starterError {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-danger);
+}
+
+/* ---- Runs tab (11-DESIGN §3c-i) ---------------------------------- */
+
+.runList {
+  display: grid;
+  gap: var(--space-3);
+}
+
+/* ---- Assistant tab (11-DESIGN §3b-iii) --------------------------- */
+
+.assistant {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.assistantSummary {
+  font-size: var(--text-sm);
+}
+
+.assistantMeta {
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.assistantHint {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: var(--leading-base);
+  margin: 0;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.askRow {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.askActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* ---- Sign-off AI summary ----------------------------------------- */
+
+.signoffSummary {
+  margin-top: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+/* ---- "State of this Spec" card (read mode, UX review #6) ---------- */
+
+/* Pinned above the doc in read mode. Sits on the 860px measure with the editor
+   and gives reviewers their five-second orientation. */
+.stateOfSpec {
+  margin-bottom: var(--space-6);
+}
+
+.stateOfSpecLabel {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-ai-fg);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: var(--space-1);
+}
+
+.stateOfSpecSummary {
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  color: var(--color-text);
+}
+
+.stateOfSpecMeta {
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}

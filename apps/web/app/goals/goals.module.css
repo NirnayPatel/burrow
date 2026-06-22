@@ -1,0 +1,525 @@
+/* Goals page — 18-GOALS-SPEC */
+
+/* ── Page header ── */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.heading {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  margin: 0;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/* ── Goal list ── */
+
+.goalList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ── Skeleton ── */
+
+.skeletonCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 120px;
+}
+
+/* ── Goal card ── */
+
+.goalCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition:
+    box-shadow var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.goalCard:hover {
+  box-shadow: var(--shadow-sm);
+  border-color: var(--color-border-strong);
+}
+
+.goalCardMuted {
+  opacity: 0.75;
+}
+
+.goalCardTop {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.goalCardTitleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.goalTitle {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  margin: 0;
+  line-height: var(--leading-snug);
+}
+
+.goalMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.goalDesc {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-base);
+  margin: 0;
+}
+
+/* ── Goal status dot ── */
+
+.goalStatusDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.goalDot_active    { background: var(--color-success); }
+.goalDot_paused    { background: var(--color-warning); }
+.goalDot_achieved  { background: var(--status-done-fg); }
+.goalDot_cancelled { background: var(--color-text-muted); }
+
+/* ── Goal status chip ── */
+
+.goalStatusChip {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  border-radius: var(--radius-full);
+  padding: 2px var(--space-2);
+  white-space: nowrap;
+}
+
+.goalStatusChip_active    { color: var(--color-success); background: var(--color-success-bg); }
+.goalStatusChip_paused    { color: var(--color-warning); background: var(--color-warning-bg); }
+.goalStatusChip_achieved  { color: var(--status-done-fg); background: var(--status-done-bg); }
+.goalStatusChip_cancelled { color: var(--color-text-muted); background: var(--color-surface-sunken); border: 1px solid var(--color-border); }
+
+/* ── Generic chip ── */
+
+.chip {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 2px var(--space-2);
+  white-space: nowrap;
+}
+
+/* ── Roll-up progress bar ── */
+
+.rollupBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.rollupBarTrack {
+  flex: 1;
+  height: 6px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  display: block;
+}
+
+.rollupBarFill {
+  display: block;
+  height: 100%;
+  width: var(--rollup-pct, 0%);
+  border-radius: var(--radius-full);
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+.rollupFillSuccess { background: var(--color-success); }
+.rollupFillWarning { background: var(--color-warning); }
+.rollupFillDanger  { background: var(--color-danger); }
+
+.rollupLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* ── Goal footer ── */
+
+.goalFooter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.expandToggle {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-accent);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.expandToggle:hover {
+  color: var(--color-accent-hover);
+}
+
+.goalActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.statusBtn {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-secondary);
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 2px var(--space-2);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.statusBtn:hover {
+  background: var(--color-border);
+  border-color: var(--color-border-strong);
+}
+
+.deleteBtn {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-danger);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  margin-left: var(--space-1);
+}
+
+.deleteBtn:hover {
+  text-decoration: underline;
+}
+
+/* ── KR list ── */
+
+.krList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-4);
+}
+
+.krEmpty {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin: 0;
+  padding: var(--space-2) 0;
+}
+
+.krMaxNote {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.addKRBtn {
+  align-self: flex-start;
+  font-size: var(--text-sm);
+}
+
+/* ── KR row ── */
+
+.krRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.krHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.krTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+  flex: 1;
+  min-width: 0;
+}
+
+.krUnit {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 1px var(--space-2);
+}
+
+.krStatusLabel {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  border-radius: var(--radius-full);
+  padding: 2px var(--space-2);
+}
+
+.krStatus_on_track  { color: var(--color-success); background: var(--color-success-bg); }
+.krStatus_achieved  { color: var(--status-done-fg); background: var(--status-done-bg); }
+.krStatus_at_risk   { color: var(--color-warning); background: var(--color-warning-bg); }
+.krStatus_off_track { color: var(--color-danger); background: var(--color-danger-bg); }
+
+.krEditBtn {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-secondary);
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 2px var(--space-2);
+  cursor: pointer;
+  margin-left: auto;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.krEditBtn:hover {
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+}
+
+/* ── KR status dot ── */
+
+.krDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.krDotSuccess { background: var(--color-success); }
+.krDotWarning { background: var(--color-warning); }
+.krDotDanger  { background: var(--color-danger); }
+
+/* ── KR progress bar ── */
+
+.krProgressWrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.krNoTarget {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.krProgressBar {
+  flex: 1;
+  height: 5px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  display: block;
+}
+
+.krProgressFill {
+  display: block;
+  height: 100%;
+  width: var(--kr-pct, 0%);
+  border-radius: var(--radius-full);
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+.krFillSuccess { background: var(--color-success); }
+.krFillWarning { background: var(--color-warning); }
+.krFillDanger  { background: var(--color-danger); }
+
+.krProgressLabel {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* ── KR inline update form ── */
+
+.krUpdateForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.krUpdateFields {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-3);
+  align-items: end;
+}
+
+.krUpdateField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.krUpdateLabel {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.krUpdateActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ── Dialog ── */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay);
+  animation: fadeIn var(--duration-base) var(--ease-out);
+  z-index: 50;
+}
+
+.dialogContent {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-6);
+  width: min(520px, calc(100vw - var(--space-6)));
+  max-height: calc(100vh - var(--space-6));
+  overflow-y: auto;
+  z-index: 51;
+  animation: riseIn var(--duration-base) var(--ease-out);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes riseIn {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 8px)); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .dialogContent { animation: none; }
+}
+
+.dialogTitle {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  margin-bottom: var(--space-5);
+}
+
+.dialogForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-3);
+}
+
+.fieldLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+}
+
+.optional {
+  font-weight: var(--weight-regular);
+  color: var(--color-text-muted);
+}
+
+.dialogError {
+  font-size: var(--text-sm);
+  color: var(--color-danger);
+  margin: 0;
+}
+
+.dialogActions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  padding-top: var(--space-2);
+}
