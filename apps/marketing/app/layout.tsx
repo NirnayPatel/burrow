@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Hanken_Grotesk } from "next/font/google";
+import { GoogleAnalytics } from "./analytics";
 import "./globals.css";
 
 // Editorial-premium type pairing (ivo-inspired): a soft transitional serif for
@@ -37,8 +38,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${display.variable} ${sans.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <GoogleAnalytics />
+      </body>
     </html>
   );
 }
-
