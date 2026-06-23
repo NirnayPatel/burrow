@@ -150,7 +150,7 @@
   .links {
     display: none;
   }
-  .actions :nth-child(2) {
+  .actions :first-child {
     display: none;
   }
 }

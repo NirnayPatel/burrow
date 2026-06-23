@@ -42,12 +42,12 @@ export function Nav() {
           <li>
             <a href="/#open-source" className={styles.link}>Open source</a>
           </li>
+          <li>
+            <a href="/demo/" target="_blank" rel="noopener noreferrer" className={styles.link}>Demo ↗</a>
+          </li>
         </ul>
 
         <div className={styles.actions}>
-          <Button variant="secondary" size="sm" href="/demo/">
-            Live demo
-          </Button>
           <Button variant="secondary" size="sm" href={GITHUB_URL} external>
             GitHub
           </Button>
