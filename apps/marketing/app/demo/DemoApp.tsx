@@ -166,8 +166,8 @@ export function DemoApp() {
   const paletteItems = useMemo(() => navGroups.flatMap((group) => group.items).filter((item) => item.label.toLowerCase().includes(query.toLowerCase())), [query]);
 
   return (
-    <div className={`${styles.demo} ${dark ? styles.dark : ""}`}>
-      <aside className={styles.sidebar}>
+    <div className={`${styles.demo} ${dark ? styles.dark : ""}`} data-analytics-section="demo">
+      <aside className={styles.sidebar} data-analytics-section="demo_navigation">
         <div className={styles.sidebarTop}>
           <a href="/" className={styles.brand} aria-label="Burrow home"><Logo size="sm" /></a>
           <button className={styles.search} onClick={() => setPaletteOpen(true)} aria-label="Search demo">
@@ -191,12 +191,12 @@ export function DemoApp() {
       </aside>
 
       <div className={styles.stage}>
-        <div className={styles.demoBar}>
+        <div className={styles.demoBar} data-analytics-section="demo_banner">
           <span><strong>Live demo</strong> · Covenant AI</span>
           <span className={styles.demoBarNote}>Changes reset when you refresh.</span>
           <a href="/">Back to burrow ↗</a>
         </div>
-        <main className={styles.main}>
+        <main className={styles.main} data-analytics-section={`demo_${view}`}>
           {view === "home" && <Home specs={specs} onApprove={approve} onOpenSpec={(spec) => { setSelectedSpec(spec); setView("specs"); }} onNavigate={navigate} onNew={() => setCreateOpen(true)} />}
           {view === "chat" && <Chat messages={chatMessages} input={chatInput} setInput={setChatInput} onSend={sendChat} />}
           {view === "specs" && (selectedSpec ? <SpecDetail spec={selectedSpec} onBack={() => setSelectedSpec(null)} onApprove={() => approve(selectedSpec.id)} onUpdate={(next) => { setSelectedSpec(next); setSpecs((current) => current.map((item) => item.id === next.id ? next : item)); }} notify={notify} /> : <Specs specs={specs} onOpen={setSelectedSpec} onNew={() => setCreateOpen(true)} />)}
@@ -244,7 +244,7 @@ function Home({ specs, onApprove, onOpenSpec, onNavigate, onNew }: { specs: Spec
   return <div className={styles.widePage}>
     <PageHeader title="Good morning, Maya" eyebrow={`Covenant AI · ${attention.length} spec needs you · 3 agents working`} action={<button className={styles.primary} onClick={onNew}>New spec</button>} />
     <div className={styles.dashboardGrid}>
-      <Card title="Needs your attention" count={attention.length}>{attention.map((spec) => <div className={styles.actionRow} key={spec.id}><button className={styles.rowMain} onClick={() => onOpenSpec(spec)}><span><code>{spec.id}</code> {spec.title}</span><small>Product and engineering sign-off requested</small></button><button className={styles.secondarySmall} onClick={() => onApprove(spec.id)}>Approve</button></div>)}</Card>
+      <Card title="Needs your attention" count={attention.length}>{attention.map((spec) => <div className={styles.actionRow} key={spec.id}><button className={styles.rowMain} data-analytics-label="open_spec" onClick={() => onOpenSpec(spec)}><span><code>{spec.id}</code> {spec.title}</span><small>Product and engineering sign-off requested</small></button><button className={styles.secondarySmall} data-analytics-label="approve_spec" onClick={() => onApprove(spec.id)}>Approve</button></div>)}</Card>
       <Card title="Agents at work" count={3}>
         <div className={styles.agentRow}><span className={styles.agentPulse} /><div><strong>Claude Code</strong><p>Implementing clause evidence viewer for SPEC-128</p></div><small>now</small></div>
         <div className={styles.agentRow}><span className={styles.agentPulse} /><div><strong>Codex</strong><p>Running DOCX preservation checks on TASK-403</p></div><small>4m</small></div>
@@ -277,7 +277,7 @@ function Specs({ specs, onOpen, onNew }: { specs: Spec[]; onOpen: (spec: Spec) =
   return <div className={styles.basePage}><PageHeader title="Specs" action={<button className={styles.primary} onClick={onNew}>New spec</button>} />
     <div className={styles.filters}>{["All teams", "Product", "Contract Intelligence", "Platform & Trust"].map((name) => <button className={team === name ? styles.filterActive : ""} key={name} onClick={() => setTeam(name)}>{name}</button>)}</div>
     <div className={styles.insight}>✦ <span><strong>Backlog insight:</strong> 31 customer signals connect trust in AI redlines to playbook grounding and auditability.</span><button>Review</button></div>
-    <div className={styles.specList}>{visible.map((spec) => <button className={styles.specRow} key={spec.id} onClick={() => onOpen(spec)}><code>{spec.id}</code><span><strong>{spec.title}</strong><small>{spec.team} · updated {spec.updated}</small></span><Status value={spec.status} /><span className={styles.chevron}>›</span></button>)}</div>
+    <div className={styles.specList}>{visible.map((spec) => <button className={styles.specRow} data-analytics-label="open_spec" key={spec.id} onClick={() => onOpen(spec)}><code>{spec.id}</code><span><strong>{spec.title}</strong><small>{spec.team} · updated {spec.updated}</small></span><Status value={spec.status} /><span className={styles.chevron}>›</span></button>)}</div>
   </div>;
 }
 
