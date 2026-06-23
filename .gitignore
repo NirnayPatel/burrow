@@ -1,6 +1,7 @@
 node_modules/
 .next/
 dist/
+out/
 .turbo/
 .env
 *.local
@@ -8,6 +9,3 @@ dist/
 .gstack/
 .data/
 *.tsbuildinfo
-
-# Marketing site is hosted from the personal-site repo, not this app repo.
-apps/marketing/

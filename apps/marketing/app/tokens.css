@@ -1,0 +1,333 @@
+/*
+ * Burrow design tokens — source of truth: hamster-oss/05-DESIGN.md
+ *
+ * The only file in the app where raw hex values are allowed.
+ * Light is the default; dark applies via prefers-color-scheme unless the
+ * user forces a theme with [data-theme="light"|"dark"] on <html>.
+ *
+ * BlockNote harmonization lives at the bottom (.bn-container) — the editor
+ * inherits the same palette so chrome and canvas read as one surface.
+ */
+
+/* ---------------------------------------------------------------- */
+/* Theme-independent tokens                                          */
+/* ---------------------------------------------------------------- */
+
+:root {
+  /* Typography — editorial-premium (ivo-inspired). Fraunces (soft transitional
+     serif) for display headings; Hanken Grotesk for body/UI. Loaded via
+     next/font in layout.tsx → --font-display / --font-sans-runtime. */
+  --font-display: var(--font-display-runtime, "Fraunces", Georgia, "Times New Roman", serif);
+  --font-sans: var(--font-sans-runtime, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono",
+    Menlo, monospace;
+
+  --text-xs: 0.75rem;      /* 12px — labels, pills, meta */
+  --text-sm: 0.8125rem;    /* 13px — secondary, helper copy */
+  --text-base: 0.9375rem;  /* 15px — body, inputs, buttons */
+  --text-md: 1.0625rem;    /* 17px — card titles, lead body */
+  --text-lg: 1.3125rem;    /* 21px — sub-headings */
+  --text-xl: 1.625rem;     /* 26px — section titles */
+  --text-2xl: 2rem;        /* 32px — large section titles */
+  --text-3xl: 2.6rem;      /* ~42px — display */
+  --text-4xl: 3.4rem;      /* ~54px — hero on tablet */
+  --text-5xl: 4.25rem;     /* 68px — hero display, desktop */
+  --leading-display: 1.04; /* tight display leading for the serif */
+
+  --leading-tight: 1.25;
+  --leading-snug: 1.4;
+  --leading-base: 1.6;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --tracking-tight: -0.01em; /* lg and above only */
+
+  /* Spacing — 4px base */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  /* Layout */
+  --content-narrow: 360px;  /* sign-in */
+  --content-base: 720px;    /* lists, settings */
+  --content-wide: 860px;    /* spec page */
+
+  /* Radius */
+  --radius-sm: 5px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* Motion — nothing exceeds 240ms; see 05-DESIGN.md §4 for what may animate */
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 240ms;
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Focus ring — applied as: outline: var(--focus-ring); outline-offset: 2px */
+  --focus-ring-width: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 80ms; /* opacity fades only */
+  }
+}
+
+/* ---------------------------------------------------------------- */
+/* Light theme (default)                                             */
+/* ---------------------------------------------------------------- */
+
+:root {
+  color-scheme: light;
+
+  /* Core surfaces — warm editorial "paper" (ivo-inspired): a grayer cream that
+     lets white cards lift off it. */
+  --color-bg: #f1ede4;              /* paper */
+  --color-surface: #ffffff;
+  --color-surface-sunken: #e8e3d8;  /* sunken paper for alternating bands */
+  --color-border: #ddd7ca;
+  --color-border-strong: #c9c2b2;
+  --color-overlay: rgb(28 27 23 / 0.4);
+
+  /* Text — ink on paper */
+  --color-text: #1b1a16;
+  --color-text-secondary: #57544b;
+  --color-text-muted: #6c685d;
+
+  /* Accent — Burrow green, plus a deep forest for the bold full-bleed band
+     (ivo's signature green section). */
+  --color-accent: #2a7d5f;
+  --color-accent-hover: #226a50;
+  --color-accent-subtle: #e3efe7;
+  --color-on-accent: #ffffff;
+  --color-focus: #2a7d5f;
+  --color-forest: #1d4a38;          /* deep band background */
+  --color-forest-soft: #2c6149;     /* forest hover/secondary */
+  --color-on-forest: #f1ede4;       /* paper text on forest */
+  --color-on-forest-muted: #a9c2b6; /* muted text on forest */
+
+  /* Semantic */
+  --color-success: #1b7a45;
+  --color-success-bg: #e2f2e7;
+  --color-warning: #9a6700;
+  --color-warning-bg: #fbf0da;
+  --color-danger: #b42318;
+  --color-danger-bg: #fbe9e7;
+  --color-danger-hover: #982014;
+
+  /* Lifecycle states (badge fg/bg pairs, all >= 4.5:1) */
+  --status-draft-fg: #5b5850;
+  --status-draft-bg: #efede8;
+  --status-in-review-fg: #9a6700;
+  --status-in-review-bg: #fbf0da;
+  --status-approved-fg: #1b7a45;
+  --status-approved-bg: #e2f2e7;
+  --status-in-progress-fg: #175cd3;
+  --status-in-progress-bg: #e3edfb;
+  --status-done-fg: #6941c6;
+  --status-done-bg: #eee9fa;
+  --status-archived-fg: #6f6b61;
+  --status-archived-bg: transparent;
+  --status-archived-border: #d3cfc7; /* dashed */
+
+  /* Sign-off verdicts — approved shares the lifecycle green by design;
+     flagged is amber ("needs discussion"), never red */
+  --verdict-approved-fg: var(--status-approved-fg);
+  --verdict-approved-bg: var(--status-approved-bg);
+  --verdict-flagged-fg: var(--status-in-review-fg);
+  --verdict-flagged-bg: var(--status-in-review-bg);
+
+  /* Presence / collaborative cursors — assign by stable hash of user id.
+     All >= 3:1 against both canvases. */
+  --presence-1: #c2522f;
+  --presence-2: #2e6fb8;
+  --presence-3: #2f8a55;
+  --presence-4: #8a55c2;
+  --presence-5: #a8782a;
+  --presence-6: #b8447e;
+  --presence-7: #2a8a8a;
+  --presence-8: #6a6f2e;
+
+  /* Elevation — borders do the work, shadows are whispers */
+  --shadow-sm: 0 1px 2px rgb(28 27 23 / 0.06), 0 2px 8px rgb(28 27 23 / 0.04);
+  --shadow-md: 0 4px 12px rgb(28 27 23 / 0.1), 0 12px 32px rgb(28 27 23 / 0.08);
+}
+
+/* ---------------------------------------------------------------- */
+/* Dark theme — via system preference (unless light is forced)…      */
+/* ---------------------------------------------------------------- */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --color-bg: #171613;
+    --color-surface: #1f1e1a;
+    --color-surface-sunken: #13120f;
+    --color-border: #32302a;
+    --color-border-strong: #45423a;
+    --color-overlay: rgb(0 0 0 / 0.55);
+
+    --color-text: #edebe5;
+    --color-text-secondary: #aeaa9f;
+    --color-text-muted: #8b8779;
+
+    --color-accent: #57b98c;
+    --color-accent-hover: #6bc79c;
+    --color-accent-subtle: #1e3329;
+    --color-on-accent: #0e2018;
+    --color-focus: #57b98c;
+
+    --color-success: #4cc38a;
+    --color-success-bg: #152b20;
+    --color-warning: #e2a33c;
+    --color-warning-bg: #2e2412;
+    --color-danger: #f2756b;
+    --color-danger-bg: #331613;
+    --color-danger-hover: #f58e86;
+
+    --status-draft-fg: #aeaa9f;
+    --status-draft-bg: #26241f;
+    --status-in-review-fg: #e2a33c;
+    --status-in-review-bg: #2e2412;
+    --status-approved-fg: #4cc38a;
+    --status-approved-bg: #152b20;
+    --status-in-progress-fg: #6da8f2;
+    --status-in-progress-bg: #14213a;
+    --status-done-fg: #b395f0;
+    --status-done-bg: #241a3a;
+    --status-archived-fg: #8b8779;
+    --status-archived-bg: transparent;
+    --status-archived-border: #45423a;
+
+    --presence-1: #e07a52;
+    --presence-2: #6da8f2;
+    --presence-3: #5cc98a;
+    --presence-4: #b395f0;
+    --presence-5: #d9a849;
+    --presence-6: #e573a8;
+    --presence-7: #52c2c2;
+    --presence-8: #aab055;
+
+    /* Dark elevation: surfaces lighten instead of casting shadows */
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-md: 0 4px 16px rgb(0 0 0 / 0.5);
+  }
+}
+
+/* ---------------------------------------------------------------- */
+/* …and via explicit user override                                   */
+/* ---------------------------------------------------------------- */
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg: #171613;
+  --color-surface: #1f1e1a;
+  --color-surface-sunken: #13120f;
+  --color-border: #32302a;
+  --color-border-strong: #45423a;
+  --color-overlay: rgb(0 0 0 / 0.55);
+
+  --color-text: #edebe5;
+  --color-text-secondary: #aeaa9f;
+  --color-text-muted: #8b8779;
+
+  --color-accent: #57b98c;
+  --color-accent-hover: #6bc79c;
+  --color-accent-subtle: #1e3329;
+  --color-on-accent: #0e2018;
+  --color-focus: #57b98c;
+
+  --color-success: #4cc38a;
+  --color-success-bg: #152b20;
+  --color-warning: #e2a33c;
+  --color-warning-bg: #2e2412;
+  --color-danger: #f2756b;
+  --color-danger-bg: #331613;
+  --color-danger-hover: #f58e86;
+
+  --status-draft-fg: #aeaa9f;
+  --status-draft-bg: #26241f;
+  --status-in-review-fg: #e2a33c;
+  --status-in-review-bg: #2e2412;
+  --status-approved-fg: #4cc38a;
+  --status-approved-bg: #152b20;
+  --status-in-progress-fg: #6da8f2;
+  --status-in-progress-bg: #14213a;
+  --status-done-fg: #b395f0;
+  --status-done-bg: #241a3a;
+  --status-archived-fg: #8b8779;
+  --status-archived-bg: transparent;
+  --status-archived-border: #45423a;
+
+  --presence-1: #e07a52;
+  --presence-2: #6da8f2;
+  --presence-3: #5cc98a;
+  --presence-4: #b395f0;
+  --presence-5: #d9a849;
+  --presence-6: #e573a8;
+  --presence-7: #52c2c2;
+  --presence-8: #aab055;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 16px rgb(0 0 0 / 0.5);
+}
+
+/* ---------------------------------------------------------------- */
+/* BlockNote harmonization (.bn-container, @blocknote/mantine)       */
+/* The editor canvas IS the app canvas — same bg, same text, same    */
+/* radius, so the Spec page reads as one continuous surface.         */
+/* ---------------------------------------------------------------- */
+
+.bn-container {
+  --bn-font-family: var(--font-sans);
+  --bn-border-radius: var(--radius-md);
+
+  --bn-colors-editor-background: var(--color-bg);
+  --bn-colors-editor-text: var(--color-text);
+
+  --bn-colors-menu-background: var(--color-surface);
+  --bn-colors-menu-text: var(--color-text);
+  --bn-colors-hovered-background: var(--color-surface-sunken);
+  --bn-colors-hovered-text: var(--color-text);
+  --bn-colors-selected-background: var(--color-accent-subtle);
+  --bn-colors-selected-text: var(--color-text);
+  --bn-colors-disabled-background: var(--color-surface-sunken);
+  --bn-colors-disabled-text: var(--color-text-muted);
+
+  --bn-colors-tooltip-background: var(--color-surface);
+  --bn-colors-tooltip-text: var(--color-text-secondary);
+
+  --bn-colors-border: var(--color-border);
+  --bn-colors-side-menu: var(--color-text-muted);
+  --bn-colors-shadow: var(--color-border);
+
+  /* Inline highlight palette mapped to our hues so highlighted text in
+     Specs stays on-palette in both themes */
+  --bn-colors-highlights-gray-background: var(--status-draft-bg);
+  --bn-colors-highlights-gray-text: var(--status-draft-fg);
+  --bn-colors-highlights-yellow-background: var(--color-warning-bg);
+  --bn-colors-highlights-yellow-text: var(--color-warning);
+  --bn-colors-highlights-green-background: var(--color-success-bg);
+  --bn-colors-highlights-green-text: var(--color-success);
+  --bn-colors-highlights-blue-background: var(--status-in-progress-bg);
+  --bn-colors-highlights-blue-text: var(--status-in-progress-fg);
+  --bn-colors-highlights-purple-background: var(--status-done-bg);
+  --bn-colors-highlights-purple-text: var(--status-done-fg);
+  --bn-colors-highlights-red-background: var(--color-danger-bg);
+  --bn-colors-highlights-red-text: var(--color-danger);
+}
+

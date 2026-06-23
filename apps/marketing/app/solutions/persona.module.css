@@ -1,0 +1,361 @@
+/*
+ * Persona page — shared layout for the four role pages.
+ * Editorial-premium: big serif headlines, small green uppercase pill labels,
+ * alternating cream/white bands, one deep forest band per page, hairline
+ * rounded cards, calm fade-up reveals. Tokens only — no raw hex.
+ */
+
+/* ── Fade-up reveal ────────────────────────────────────────────────── */
+/* Progressive enhancement: a CSS load animation that ALWAYS ends visible
+   (animation-fill-mode: both). Content never depends on JS to appear — if
+   hydration is slow or fails, the keyframe still resolves to opacity:1. The
+   IntersectionObserver `.isVisible` class is a harmless no-op on top of this. */
+.reveal {
+  animation: personaFadeUp var(--duration-slow) var(--ease-out) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+@keyframes personaFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.isVisible {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    animation: none;
+  }
+}
+
+/* ── Shared band shell ─────────────────────────────────────────────── */
+.band {
+  padding-block: calc(var(--space-8) * 1.5);
+  border-top: 1px solid var(--color-border);
+}
+.bandSunken {
+  background-color: var(--color-surface-sunken);
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background-color: var(--color-accent-subtle);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-4);
+}
+
+.sectionHeader {
+  max-width: 680px;
+  margin-bottom: var(--space-7);
+}
+
+.sectionTitle {
+  font-size: clamp(var(--text-2xl), 4vw, var(--text-3xl));
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+  line-height: var(--leading-display);
+}
+
+/* ── Hero ──────────────────────────────────────────────────────────── */
+.hero {
+  padding-top: calc(var(--space-8) * 1.25);
+  padding-bottom: var(--space-8);
+}
+
+.heroInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-5);
+}
+
+.eyebrow {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.headline {
+  font-size: clamp(var(--text-3xl), 6vw, var(--text-5xl));
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-display);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+  max-width: 16ch;
+}
+
+.accent {
+  color: var(--color-accent);
+}
+
+.subhead {
+  font-size: clamp(var(--text-base), 2vw, var(--text-md));
+  color: var(--color-text-secondary);
+  line-height: var(--leading-base);
+  max-width: 60ch;
+}
+
+.ctas {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ── The problem today ─────────────────────────────────────────────── */
+.problem {
+  max-width: 760px;
+}
+
+.problemTitle {
+  font-size: clamp(var(--text-xl), 3.5vw, var(--text-3xl));
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+  line-height: var(--leading-display);
+  margin-bottom: var(--space-4);
+}
+
+.problemBody {
+  font-size: var(--text-md);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-base);
+}
+
+/* ── Value-prop grid ───────────────────────────────────────────────── */
+.propGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-4);
+}
+
+.propCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  height: 100%;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+.propCard:hover {
+  border-color: var(--color-border-strong);
+}
+
+.propFeature {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.propTitle {
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-snug);
+}
+
+.propBody {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-base);
+}
+
+/* Honest/accuracy note — amber, never red */
+.honestNote {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-warning);
+  margin-top: var(--space-6);
+  max-width: 760px;
+}
+.honestTag {
+  font-weight: var(--weight-medium);
+  color: var(--color-warning);
+}
+
+/* ── Forest band — persona-fit statement ───────────────────────────── */
+.forest {
+  background-color: var(--color-forest);
+  padding-block: calc(var(--space-8) * 1.75);
+}
+
+.forestInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-5);
+}
+
+.forestLabel {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-on-forest-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.forestStatement {
+  font-family: var(--font-display);
+  font-size: clamp(var(--text-2xl), 4.5vw, var(--text-4xl));
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-display);
+  color: var(--color-on-forest);
+  max-width: 20ch;
+}
+
+.forestSupport {
+  font-size: clamp(var(--text-base), 2vw, var(--text-md));
+  color: var(--color-on-forest-muted);
+  line-height: var(--leading-base);
+  max-width: 56ch;
+}
+
+/* ── Outcomes strip ────────────────────────────────────────────────── */
+.outcomeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.outcomeCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-5);
+  height: 100%;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.outcomeStat {
+  font-family: var(--font-display);
+  font-size: clamp(var(--text-2xl), 4vw, var(--text-3xl));
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-display);
+  color: var(--color-accent);
+}
+
+.outcomeLabel {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-base);
+}
+
+/* ── Cross-links to other personas ─────────────────────────────────── */
+.crossGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+.crossCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  height: 100%;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text);
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+.crossCard:hover {
+  border-color: var(--color-border-strong);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.crossPersona {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.crossHeadline {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-snug);
+}
+
+.crossArrow {
+  font-size: var(--text-md);
+  color: var(--color-accent);
+  margin-top: var(--space-1);
+}
+
+/* ── Final CTA ─────────────────────────────────────────────────────── */
+.cta {
+  padding-block: calc(var(--space-8) * 2);
+  border-top: 1px solid var(--color-border);
+}
+
+.ctaInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-5);
+}
+
+.ctaTitle {
+  font-size: clamp(var(--text-2xl), 5vw, var(--text-4xl));
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+  line-height: var(--leading-display);
+  max-width: 18ch;
+}
+
+.ctaSub {
+  font-size: var(--text-md);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-base);
+  max-width: 56ch;
+}
+
+.ctaNote {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+

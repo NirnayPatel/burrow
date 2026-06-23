@@ -1,0 +1,59 @@
+.lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  text-decoration: none;
+  user-select: none;
+}
+
+.mark {
+  flex-shrink: 0;
+}
+
+/* Outer arch + baseline: near-black in light, near-white in dark */
+.markOuter {
+  fill: var(--color-text);
+  stroke: var(--color-text);
+}
+
+/* Inner arch: always Burrow green (scarce accent) */
+.markInner {
+  stroke: var(--color-accent);
+}
+
+.wordmark {
+  font-family: var(--font-sans);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+  line-height: 1;
+}
+
+/* Sizes */
+.sm .mark {
+  width: 20px;
+  height: 20px;
+}
+.sm .wordmark {
+  font-size: var(--text-base);
+  margin-left: 7px;
+}
+
+.md .mark {
+  width: 28px;
+  height: 28px;
+}
+.md .wordmark {
+  font-size: var(--text-md);
+  margin-left: 9px;
+}
+
+.lg .mark {
+  width: 40px;
+  height: 40px;
+}
+.lg .wordmark {
+  font-size: var(--text-xl);
+  margin-left: 12px;
+}
+
