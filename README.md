@@ -1,8 +1,8 @@
 <div align="center">
 
-# 🌱 Burrow
+# Burrow
 
-### Where specs become shipped work.
+### One surface for the whole product org. Specs to shipped.
 
 **The open-source, self-hostable workspace for product teams and their AI agents.**
 Write specs together in real time. AI breaks them into agent-ready work using *your own* API keys.
@@ -184,7 +184,6 @@ Open source. The license is being finalized (AGPL-3.0 vs Apache-2.0); see [`LICE
 
 <div align="center">
 <br/>
-<sub>Built to be owned, not rented. 🌱</sub>
 <br/>
 <sub>Built by <a href="https://nirnaypatel.com">Nirnay Patel</a></sub>
 </div>
