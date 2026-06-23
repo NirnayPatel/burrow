@@ -1,0 +1,185 @@
+/* Onboarding wizard — lightweight, 3-step, skippable.
+   Uses PageShell width="narrow" (max 360px).
+   All values from tokens.css — no raw hex, no inline styles. */
+
+.header {
+  text-align: center;
+  margin-bottom: var(--space-6);
+}
+
+.brand {
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  color: var(--color-accent);
+  letter-spacing: var(--tracking-tight);
+}
+
+.section {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.heading {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+  text-align: center;
+}
+
+.sub {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-base);
+  text-align: center;
+}
+
+/* ── Role grid ── */
+
+.roleGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.roleCard {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.roleCard:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent-subtle);
+}
+
+.roleCard:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.roleCardSelected {
+  border-color: var(--color-accent);
+  background: var(--color-accent-subtle);
+}
+
+.roleLabel {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  line-height: var(--leading-tight);
+}
+
+.roleDesc {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  line-height: var(--leading-snug);
+}
+
+/* ── Skip row ── */
+
+.skipRow {
+  display: flex;
+  justify-content: center;
+}
+
+/* ── Textarea ── */
+
+.textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--space-3);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  resize: vertical;
+  line-height: var(--leading-base);
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+.textarea:focus {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: 2px;
+  border-color: var(--color-accent);
+}
+
+/* ── File drop zone ── */
+
+.dropZone {
+  display: grid;
+  gap: var(--space-1);
+  justify-items: center;
+  padding: var(--space-5) var(--space-4);
+  background: var(--color-surface-sunken);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: center;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.dropZone:hover,
+.dropZoneActive {
+  border-color: var(--color-accent);
+  background: var(--color-accent-subtle);
+}
+
+.dropZone:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.fileInputHidden {
+  display: none;
+}
+
+.dropZoneLabel {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  font-weight: var(--weight-medium);
+}
+
+.dropZoneHint {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.dropZoneSuccess {
+  font-size: var(--text-sm);
+  color: var(--color-success);
+  font-weight: var(--weight-medium);
+}
+
+/* ── Action row ── */
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  justify-content: flex-start;
+}
+
+/* ── Step 3 checkmark ── */
+
+.checkmark {
+  display: flex;
+  justify-content: center;
+  color: var(--color-accent);
+}

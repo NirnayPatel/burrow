@@ -1,0 +1,11 @@
+node_modules/
+.next/
+dist/
+out/
+.turbo/
+.env
+*.local
+.DS_Store
+.gstack/
+.data/
+*.tsbuildinfo

@@ -1,0 +1,42 @@
+/* Breadcrumb — quiet orientation, muted until hovered. */
+.bar {
+  margin-bottom: var(--space-3);
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+}
+
+.crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.link {
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+.link:hover {
+  color: var(--color-text);
+  text-decoration: underline;
+}
+
+.text {
+  color: var(--color-text-muted);
+}
+
+.current {
+  color: var(--color-text-secondary);
+}
+
+.sep {
+  color: var(--color-text-muted);
+}

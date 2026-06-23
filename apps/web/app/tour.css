@@ -1,0 +1,80 @@
+/* Theme driver.js to the Burrow design system — calm, on-token, dark-mode aware.
+   These target driver.js's injected global classes, so this is a global sheet
+   (not a CSS module). Tokens only; the spotlight overlay scrim is the one
+   neutral rgba (a dimmer, not a brand color). */
+
+.driver-popover {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  max-width: 320px;
+  padding: var(--space-4);
+}
+
+.driver-popover-title {
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--space-2);
+}
+
+.driver-popover-description {
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.driver-popover-progress-text {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.driver-popover-footer {
+  margin-top: var(--space-4);
+  gap: var(--space-2);
+}
+
+.driver-popover-footer button {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-3);
+  text-shadow: none;
+  cursor: pointer;
+}
+
+/* Back = secondary */
+.driver-popover-prev-btn {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text-secondary);
+}
+.driver-popover-prev-btn:hover {
+  background: var(--color-surface-sunken);
+}
+
+/* Next/Done = primary accent */
+.driver-popover-next-btn {
+  background: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  color: var(--color-on-accent);
+}
+.driver-popover-next-btn:hover {
+  background: var(--color-accent-hover);
+}
+
+.driver-popover-close-btn {
+  color: var(--color-text-muted);
+}
+.driver-popover-close-btn:hover {
+  color: var(--color-text);
+}
+
+/* Spotlight ring around the highlighted element */
+.driver-popover-arrow {
+  border-color: var(--color-surface);
+}

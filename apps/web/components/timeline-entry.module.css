@@ -1,0 +1,68 @@
+.entry {
+  list-style: none;
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.entry:hover {
+  background: var(--color-surface-sunken);
+}
+
+/* Left rail node, colored by verdict */
+.node {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 7px;
+  border-radius: var(--radius-full);
+}
+
+.approved {
+  background: var(--verdict-approved-fg);
+}
+
+.flagged {
+  background: var(--verdict-flagged-fg);
+}
+
+.cleared {
+  background: var(--color-text-muted);
+}
+
+.body {
+  min-width: 0;
+}
+
+.line {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+}
+
+.name {
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+.version {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.time {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.comment {
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}

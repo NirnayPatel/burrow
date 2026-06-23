@@ -1,0 +1,40 @@
+.lockup {
+  margin-bottom: var(--space-5);
+  text-align: center;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.brand {
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  color: var(--color-accent);
+  letter-spacing: var(--tracking-tight);
+}
+
+.heading {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text);
+}
+
+.sub {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.error {
+  font-size: var(--text-sm);
+  color: var(--color-danger);
+}
+
+.switchWrap {
+  margin-top: var(--space-3);
+  text-align: center;
+}

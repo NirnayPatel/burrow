@@ -1,0 +1,16 @@
+{
+  "name": "burrow",
+  "private": true,
+  "version": "0.0.1",
+  "packageManager": "pnpm@10.17.0",
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:db": "pnpm --filter @burrow/collab exec tsx src/dev-db.ts",
+    "build": "turbo build",
+    "typecheck": "turbo typecheck",
+    "db:push": "pnpm --filter @burrow/core db:push"
+  },
+  "devDependencies": {
+    "turbo": "^2"
+  }
+}

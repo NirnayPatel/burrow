@@ -1,0 +1,405 @@
+/* Chat page — two-pane workspace chat surface.
+   Calm, AiSurface aesthetic. No neon. No chat-app gradients.
+   Token-only: all color via var(--color-*), all space via var(--space-*). */
+
+/* ── Full-height two-pane layout below AppNav ─────────────────────────────── */
+
+.layout {
+  display: flex;
+  height: calc(100vh - 52px); /* 52px = AppNav height */
+  overflow: hidden;
+}
+
+/* ── Thread rail (left) ───────────────────────────────────────────────────── */
+
+.rail {
+  width: 240px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--color-border);
+  background: var(--color-bg);
+  overflow: hidden;
+}
+
+.railHeader {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.newChatBtn {
+  width: 100%;
+}
+
+.threadList {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-2) var(--space-2);
+}
+
+.railEmpty {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  padding: var(--space-3);
+}
+
+.threadRow {
+  display: flex;
+  align-items: stretch;
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.threadRow:hover {
+  background: var(--color-surface-sunken);
+}
+
+.threadRowActive {
+  background: var(--color-accent-subtle);
+}
+
+.threadBtn {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  text-align: left;
+}
+
+.threadBtn:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.threadTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
+}
+
+.threadTime {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.deleteBtn {
+  flex-shrink: 0;
+  width: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.threadRow:hover .deleteBtn,
+.threadRowActive .deleteBtn {
+  opacity: 1;
+}
+
+.deleteBtn:hover {
+  color: var(--color-danger);
+}
+
+.deleteBtn:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: 1px;
+  opacity: 1;
+}
+
+.threadSkeletonRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+}
+
+/* ── Main (right) ─────────────────────────────────────────────────────────── */
+
+.main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+
+.noThread {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── ChatView ─────────────────────────────────────────────────────────────── */
+
+.chatView {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Message scroll area */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.loadingMessages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 640px;
+}
+
+/* ── Message turns ────────────────────────────────────────────────────────── */
+
+/* User turns: quiet, right-aligned-ish (text still left-reads, just pushed right) */
+.userTurn {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.userText {
+  max-width: 480px;
+  font-size: var(--text-base);
+  color: var(--color-text);
+  line-height: var(--leading-base);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Assistant turns: full-width AiSurface */
+.assistantTurn {
+  max-width: 680px;
+  width: 100%;
+}
+
+.assistantText {
+  font-size: var(--text-base);
+  color: var(--color-text);
+  line-height: var(--leading-base);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── Tool chips (read tools) ─────────────────────────────────────────────── */
+
+.toolChip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.toolChipIcon {
+  font-size: var(--text-xs);
+  color: var(--color-ai-fg);
+}
+
+.toolChipLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.toolChipToggle {
+  font-size: var(--text-xs);
+  color: var(--color-accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.toolChipToggle:hover {
+  color: var(--color-accent-hover);
+}
+
+.toolChipToggle:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.toolChipDetail {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin-top: var(--space-1);
+}
+
+/* ── Confirm cards ───────────────────────────────────────────────────────── */
+
+.confirmCard {
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.confirmDesc {
+  font-size: var(--text-base);
+  color: var(--color-text);
+  margin-bottom: var(--space-3);
+  line-height: var(--leading-snug);
+}
+
+.confirmActions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+
+.confirmDone {
+  font-size: var(--text-sm);
+  color: var(--color-success);
+}
+
+.confirmDismissed {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.confirmSpecLink {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: var(--weight-medium);
+}
+
+.confirmSpecLink:hover {
+  color: var(--color-accent-hover);
+}
+
+/* ── No-key banner ────────────────────────────────────────────────────────── */
+
+.noKeyBanner {
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-warning-bg);
+  border-top: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+  color: var(--color-warning);
+  flex-shrink: 0;
+}
+
+.noKeyLink {
+  color: var(--color-warning);
+  font-weight: var(--weight-medium);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.noKeyLink:hover {
+  opacity: 0.8;
+}
+
+/* ── Composer ─────────────────────────────────────────────────────────────── */
+
+.composer {
+  flex-shrink: 0;
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-end;
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.composerInput {
+  flex: 1;
+  min-height: 40px;
+  max-height: 160px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  color: var(--color-text);
+  resize: none;
+  line-height: var(--leading-base);
+  transition: border-color var(--duration-fast) var(--ease-out);
+  field-sizing: content;
+}
+
+.composerInput::placeholder {
+  color: var(--color-text-muted);
+}
+
+.composerInput:hover {
+  border-color: var(--color-text-muted);
+}
+
+.composerInput:focus-visible {
+  border-color: var(--color-accent);
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+.composerInput:disabled {
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+}
+
+/* ── Responsive: collapse rail at narrow widths ───────────────────────────── */
+
+@media (max-width: 640px) {
+  .rail {
+    width: 200px;
+  }
+
+  .threadTitle {
+    max-width: 130px;
+  }
+
+  .userText {
+    max-width: 280px;
+  }
+
+  .assistantTurn {
+    max-width: 100%;
+  }
+}

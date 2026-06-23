@@ -1,0 +1,15 @@
+# Dev compose: Postgres only. Full self-host compose (web/server/collab images,
+# forced secret generation) is on the roadmap.
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: burrow
+      POSTGRES_PASSWORD: burrow
+      POSTGRES_DB: burrow
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:

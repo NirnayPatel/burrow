@@ -1,0 +1,213 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+
+.heading {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+/* Wrapper that holds the nav row + archive button as an inline pair */
+.rowWrap {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-2);
+}
+
+.row {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  text-decoration: none;
+  transition:
+    box-shadow var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.row:hover {
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+  border-color: var(--color-border-strong);
+  /* This is a card-style row, not an inline text link. Suppress the global
+     a:hover underline that otherwise underlines the whole row (displayId,
+     title, and the "updated …" meta all at once). */
+  text-decoration: none;
+}
+
+/* Keyboard selection (UX review #7) — calm left accent + sunken fill, not loud.
+   Box-shadow draws the rail so it never shifts layout. */
+.rowSelected,
+.row:focus-visible {
+  outline: none;
+  border-color: var(--color-accent);
+  background: var(--color-accent-subtle);
+  box-shadow: inset 3px 0 0 0 var(--color-accent);
+}
+
+.displayId {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* titleCol wraps title + updated-time as a stacked pair (status-board feel) */
+.titleCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0; /* allow ellipsis inside flex child */
+}
+
+.title {
+  font-weight: var(--weight-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Quiet updated timestamp — tabular-nums so it doesn't jump on refresh */
+.updatedAt {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Blue dot for in_progress specs — same color as the lifecycle badge.
+   This is the only non-text signal; always paired with the StatusBadge. */
+.agentDot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background: var(--status-in-progress-fg);
+  flex-shrink: 0;
+}
+
+/* Inline archive button — ghost, appears in the row's trailing slot */
+.archiveBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+  /* 44px touch target via padding */
+  padding: 0 var(--space-2);
+  min-height: 44px;
+}
+
+.archiveBtn:hover {
+  background: var(--color-surface-sunken);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+}
+
+.archiveBtn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* ── Team filter segmented control ── */
+.teamFilter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+}
+
+.teamFilterBtn {
+  appearance: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.teamFilterBtn:hover {
+  background: var(--color-surface-sunken);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+}
+
+.teamFilterBtn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.teamFilterActive {
+  background: var(--color-accent-subtle);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.teamFilterActive:hover {
+  background: var(--color-accent-subtle);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* Skeleton loading rows — same geometry as real rows, no layout shift */
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  min-height: 48px;
+}
+
+.skeletonRow > span:nth-child(2) {
+  flex: 1;
+}
+
+/* Skeleton title+subtitle stacked pair */
+.skeletonTitleCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}

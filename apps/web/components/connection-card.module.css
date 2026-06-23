@@ -1,0 +1,157 @@
+/* ConnectionCard — surface+border, radius-md per 11-DESIGN 3e */
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition:
+    box-shadow var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-sm);
+  border-color: var(--color-border-strong);
+}
+
+/* Connected cards get a faint accent-subtle left border accent */
+.connected {
+  border-left: 3px solid var(--color-accent);
+}
+
+.disconnected {
+  border-left: 3px solid var(--color-border);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+}
+
+/* Distinguishes multiple connections to the same target (the URL host). Quieter
+   than the target name so the card still reads "Custom MCP" first. */
+.instanceLabel {
+  font-weight: var(--weight-regular);
+  color: var(--color-text-muted);
+}
+
+/* Connection-state dot — mirrors the StatusBadge dot pattern */
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.dotConnected {
+  background: var(--color-success);
+}
+
+.dotDisconnected {
+  background: var(--color-border-strong);
+}
+
+.description {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: var(--leading-base);
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.metaUrl {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  word-break: break-all;
+}
+
+.authBadge {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-success);
+  background: var(--color-success-bg);
+  border-radius: var(--radius-full);
+  padding: 2px var(--space-2);
+  align-self: flex-start;
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+/* Connect — styled like a primary action but smaller */
+.connectBtn {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  font-family: var(--font-sans);
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  min-height: 36px;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.connectBtn:hover {
+  background: var(--color-accent-hover);
+}
+
+.connectBtn:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Disconnect — ghost danger */
+.removeBtn {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  font-family: var(--font-sans);
+  color: var(--color-danger);
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  min-height: 36px;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.removeBtn:hover {
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger);
+}
+
+.removeBtn:focus-visible {
+  outline: 2px solid var(--color-danger);
+  outline-offset: 2px;
+}
+
+.readOnlyNote {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin: 0;
+}

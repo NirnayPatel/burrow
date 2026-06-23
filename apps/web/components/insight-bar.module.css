@@ -1,0 +1,26 @@
+/* Insight strip — sits below a page header, above its content. Calm, low
+   chrome: a label and a wrap of dismissible chips. No box/border so it reads as
+   ambient context, not a callout. */
+.bar {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  min-height: var(--space-5);
+}
+
+.label {
+  flex-shrink: 0;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  padding-top: 2px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

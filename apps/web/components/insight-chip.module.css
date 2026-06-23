@@ -1,0 +1,41 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 3px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  line-height: 1.4;
+}
+.neutral {
+  background: var(--color-surface-sunken);
+  color: var(--color-text-secondary);
+}
+.attention {
+  background: var(--verdict-flagged-bg, var(--color-warning-bg));
+  color: var(--verdict-flagged-fg, var(--color-warning));
+}
+.icon {
+  font-size: 11px;
+}
+.text {
+  white-space: normal;
+}
+.dismiss {
+  border: none;
+  background: none;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+}
+.dismiss:hover {
+  opacity: 1;
+}
+.dismiss:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}

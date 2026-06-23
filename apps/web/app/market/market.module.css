@@ -1,0 +1,519 @@
+/* ── Market page ─────────────────────────────────────────────────────────── */
+
+/* ── Section layout ─────────────────────────────────────────────────────── */
+
+.section {
+  margin-bottom: var(--space-7);
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.sectionHeaderText {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.pageHeading {
+  /* Page titles are text-lg (h2) per 05-DESIGN §2; text-xl is reserved for
+     the Spec title on the spec page. Match every other feature page. */
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+}
+
+.sectionHeading {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+}
+
+.sectionSubtext {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  max-width: 60ch;
+}
+
+/* ── Competitor grid ────────────────────────────────────────────────────── */
+
+.competitorGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+
+.competitorCard {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition:
+    box-shadow var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.competitorCard:hover {
+  box-shadow: var(--shadow-sm);
+  border-color: var(--color-border-strong);
+}
+
+.competitorCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.competitorName {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  line-height: var(--leading-tight);
+}
+
+.competitorUrl {
+  font-size: var(--text-xs);
+  color: var(--color-accent);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.competitorUrl:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.competitorNotes {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  line-height: var(--leading-snug);
+  margin: 0;
+}
+
+.competitorSkeletonCard {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+/* ── Icon button (delete X) ────────────────────────────────────────────── */
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.iconBtn:hover {
+  color: var(--color-danger);
+}
+
+.iconBtn:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* ── Add forms ──────────────────────────────────────────────────────────── */
+
+.addForm {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.addRow {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.addField {
+  display: grid;
+  gap: var(--space-1);
+  flex: 1;
+  min-width: 160px;
+}
+
+.addLabel {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.optional {
+  font-weight: var(--weight-regular);
+  color: var(--color-text-muted);
+}
+
+.addActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.addTextarea {
+  width: 100%;
+  resize: vertical;
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  line-height: var(--leading-base);
+  min-height: 100px;
+  box-sizing: border-box;
+}
+
+.addTextarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+.addTextarea:focus {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 0;
+  border-color: var(--color-accent);
+}
+
+/* ── No provider key banner ─────────────────────────────────────────────── */
+
+.noKeyBanner {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.bannerLink {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.bannerLink:hover {
+  color: var(--color-accent-hover);
+}
+
+/* ── Add signal panel ───────────────────────────────────────────────────── */
+
+.addSignalPanel {
+  margin-bottom: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.modeTabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modeTab {
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.modeTab:hover {
+  color: var(--color-text);
+}
+
+.modeTab:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.modeTabActive {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+}
+
+.signalForm {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+}
+
+/* ── Signal feed ────────────────────────────────────────────────────────── */
+
+.signalList {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.signalCard {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition:
+    box-shadow var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
+}
+
+.signalCard:hover {
+  box-shadow: var(--shadow-sm);
+  border-color: var(--color-border-strong);
+}
+
+/* Severity left border cue — quiet, never alarmist. A competitor signal is a
+   "needs attention" cue, not a failure: amber, never red (11-DESIGN-AI-NATIVE
+   §P5 / §2 "the line we won't cross"). High vs medium differ by weight, not by
+   reaching for red. */
+.signalCard:has(.severity_high) {
+  border-left: 3px solid var(--color-warning);
+}
+
+.signalCard:has(.severity_medium) {
+  border-left: 3px solid var(--color-border-strong);
+}
+
+.signalCard:has(.severity_low) {
+  border-left: 3px solid var(--color-border);
+}
+
+.signalCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.signalCardMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.signalTitle {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text);
+  line-height: var(--leading-snug);
+  margin: 0;
+}
+
+.signalSummary {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-base);
+  margin: 0;
+}
+
+.soWhatSurface {
+  /* slight override so it reads as subordinate — font smaller than body */
+  font-size: var(--text-sm);
+}
+
+.signalCardFooter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.sourceLink {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.sourceLink:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ── Spec linking area ──────────────────────────────────────────────────── */
+
+.specLinkArea {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.specSelectWrap {
+  min-width: 200px;
+}
+
+.specLinked {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.specRef {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--color-accent);
+  text-decoration: none;
+  font-family: var(--font-mono);
+}
+
+.specRef:hover {
+  color: var(--color-accent-hover);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.unlinkBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  line-height: 1;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.unlinkBtn:hover {
+  color: var(--color-danger);
+}
+
+/* ── Type chip ──────────────────────────────────────────────────────────── */
+
+.typeChip {
+  display: inline-block;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+/* Signal type is a taxonomy, not a lifecycle state. Reusing the status palette
+   (in_progress blue, done violet, …) made "Launch" read as "work in motion" and
+   stole the meaning of those hues (05-DESIGN §3: each state owns one hue, used
+   nowhere else). All types share one neutral monochrome chip; the label carries
+   the category. */
+.type_launch,
+.type_pricing,
+.type_positioning,
+.type_funding,
+.type_hiring,
+.type_other {
+  background: var(--color-surface-sunken);
+  color: var(--color-text-secondary);
+}
+
+/* ── Severity bar ───────────────────────────────────────────────────────── */
+
+/* A thin pill — calm cue, not an alarm */
+.severityBar {
+  display: inline-block;
+  width: 4px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+/* Amber, never red — a competitor signal is "worth your attention," not a
+   failure (11-DESIGN-AI-NATIVE §P5). High vs medium differ by opacity weight,
+   matching the left-border cue above. */
+.severity_high {
+  background: var(--color-warning);
+}
+
+.severity_medium {
+  background: var(--color-warning);
+  opacity: 0.6;
+}
+
+.severity_low {
+  background: var(--color-border-strong);
+}
+
+/* ── Competitor tag on signal ───────────────────────────────────────────── */
+
+.competitorTag {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 1px var(--space-2);
+  white-space: nowrap;
+}
+
+/* ── Signal date ────────────────────────────────────────────────────────── */
+
+.signalDate {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/* ── Signal skeleton ────────────────────────────────────────────────────── */
+
+.signalSkeletonCard {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.skeletonRow {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
