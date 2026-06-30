@@ -63,21 +63,23 @@ Think of it as the **operating system for an AI-native product org**: real-time 
 Burrow's navigation is grouped by intent — **Work**, **Insight**, and **Org** — and an AI layer runs through all of it.
 
 #### 🛠 Work
-- **Specs** — multiplayer rich-text editor (BlockNote + Yjs), a `/` slash menu for AI drafting *and* spec actions (`/breakdown`, `/signoff request`, `/link initiative`), a reviewer **reading mode**, and an Assistant rail that surfaces gaps as calm offers.
+- **Specs** — multiplayer rich-text editor (BlockNote + Yjs), a `/` slash menu for AI drafting *and* spec actions (`/breakdown`, `/signoff request`, `/link initiative`), a reviewer **reading mode**, an Assistant rail that surfaces gaps as calm offers, and a **post-launch evaluation panel** that streams an AI analysis against live analytics data (PostHog, Amplitude) once a spec is approved.
 - **Roadmap** — initiatives across **Now / Next / Later**, drag-to-move, rolled-up spec progress.
 - **Goals** — OKRs (and other frameworks) with key results and links to the specs/initiatives that serve them.
 - **Chat** — a workspace assistant with read tools grounded in your specs and context.
 - **Home** — a calm dashboard: what needs you, what agents are doing, and act-in-place approvals.
 
 #### 🔭 Insight
-- **Feedback** — capture customer signals; AI clusters them into themes and spins a theme into a Spec.
+- **Feedback** — capture customer signals; AI clusters them into themes and spins a theme into a Spec. Pull signals automatically via webhook from any source (n8n, Zapier, custom scripts) using ingest keys, or paste them in manually.
+- **VoC Reports** — one click generates a streaming Voice-of-Customer report from your clustered themes: executive summary, verbatim quotes, gaps without a spec, and ranked recommendations.
+- **Opportunity Ranking** — themes are scored automatically from feedback volume, sentiment, and market signal severity, then surfaced as ranked opportunities on the dashboard with AI-generated strategic narratives.
 - **Market** — track competitors and severity-scored market signals with a "so what for us."
 - **Context** — your company/product/persona docs, embedded into a Context Graph that grounds every AI surface.
 
 #### 🏢 Org
 - **Teams** — squads that own both people and work.
-- **Connections** — MCP-first integrations (Jira, Confluence, Slack) with your own credentials.
-- **Automations** — when/do routines (e.g. *sign-off approved → notify Slack*), no extra infra.
+- **Connections** — MCP-first integrations (Jira, Confluence, Slack, PostHog, Amplitude) with your own credentials. Test any connection with one click.
+- **Automations** — when/do routines (e.g. *sign-off approved → notify Slack*, *spec in progress → push Jira tasks*), no extra infra.
 - **Library** — shareable, version-controlled **skills** and **agents** (and routines), synced as `.burrow/` files.
 
 #### 🧠 AI-native & fast to operate
@@ -176,7 +178,11 @@ burrow/
 
 ## 🗺 Status
 
-Burrow runs end to end today: multiplayer specs, AI breakdowns, the agent bridge, roadmap / goals / feedback / market / context, the Library (versioned skills & agents), insights everywhere, and a Linear-grade operability layer (palette, search, shortcuts). Hardening for managed deployment (Docker packaging, OAuth for MCP) is the next milestone.
+Burrow runs end to end today: multiplayer specs, AI breakdowns, the agent bridge, roadmap / goals / feedback / market / context, the Library (versioned skills & agents), insights everywhere, and a Linear-grade operability layer (palette, search, shortcuts).
+
+Recent additions: webhook-based feedback ingestion with dedup and ingest key auth, VoC report generation via SSE streaming, opportunity ranking scored from feedback volume + sentiment + market signals, post-launch evaluation reports tied to analytics connections (PostHog, Amplitude), and connection probe/test for all integrations.
+
+Hardening for managed deployment (Docker packaging, OAuth for MCP) is the next milestone.
 
 ## 📄 License
 
