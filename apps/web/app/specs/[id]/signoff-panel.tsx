@@ -4,6 +4,7 @@ import { Fragment, useCallback, useEffect, useState } from "react";
 import { api, API_URL, type Spec } from "../../../lib/api";
 import { Button } from "../../../components/button";
 import { Input } from "../../../components/input";
+import { Select } from "../../../components/select";
 import { TimelineEntry } from "../../../components/timeline-entry";
 import { AiSurface } from "../../../components/ai-surface";
 import { SuggestionChip } from "../../../components/suggestion-chip";
@@ -17,6 +18,19 @@ type Entry = {
   specVersion: string;
   createdAt: string;
   userName: string;
+};
+
+type AnalyticsConnection = {
+  id: string;
+  target: string;
+  mcpUrl: string;
+};
+
+type EvaluationRow = {
+  id: string;
+  report: string;
+  generatedAt: string;
+  connectionId: string | null;
 };
 
 export function SignoffPanel({
@@ -37,6 +51,14 @@ export function SignoffPanel({
   const [reviewers, setReviewers] = useState<string[]>([]);
   const toast = useToast();
 
+  // Evaluate launch (Gap 5)
+  const [analyticsConns, setAnalyticsConns] = useState<AnalyticsConnection[]>([]);
+  const [selectedConn, setSelectedConn] = useState("");
+  const [evalText, setEvalText] = useState("");
+  const [evalStreaming, setEvalStreaming] = useState(false);
+  const [evalDone, setEvalDone] = useState(false);
+  const [pastEvals, setPastEvals] = useState<EvaluationRow[]>([]);
+
   // One-line AI orientation + a suggested-reviewers offer so reviewers get
   // context in five seconds (11-DESIGN §3d). Both degrade silently.
   useEffect(() => {
@@ -47,6 +69,16 @@ export function SignoffPanel({
       .catch(() => {});
     api<{ members: { name: string }[] }>("/api/org")
       .then((r) => setReviewers(r.members.map((m) => m.name).slice(0, 2)))
+      .catch(() => {});
+    api<AnalyticsConnection[]>("/api/connections")
+      .then((conns) => {
+        const analytics = conns.filter((c) => c.target === "posthog" || c.target === "amplitude");
+        setAnalyticsConns(analytics);
+        if (analytics.length > 0) setSelectedConn(analytics[0].id);
+      })
+      .catch(() => {});
+    api<EvaluationRow[]>(`/api/specs/${specId}/evaluations`)
+      .then(setPastEvals)
       .catch(() => {});
   }, [specId]);
 
@@ -82,6 +114,55 @@ export function SignoffPanel({
     setComment("");
     toast("Sign-off recorded", "success");
     load();
+  }
+
+  async function startEvaluation() {
+    setEvalText("");
+    setEvalDone(false);
+    setEvalStreaming(true);
+    try {
+      const res = await fetch(`${API_URL}/api/specs/${specId}/evaluate`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ connectionId: selectedConn || undefined }),
+      });
+      if (!res.ok) {
+        const data = await res.json() as { error?: string };
+        toast(data.error === "no_provider_key"
+          ? "Add an AI provider key in Settings to generate evaluations."
+          : (data.error ?? "Evaluation failed — try again."), "danger");
+        return;
+      }
+      const reader = res.body?.getReader();
+      if (!reader) return;
+      const decoder = new TextDecoder();
+      let buf = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split("\n");
+        buf = lines.pop() ?? "";
+        for (const line of lines) {
+          if (line.startsWith("data:")) {
+            try {
+              const payload = JSON.parse(line.slice(5).trim()) as string;
+              if (typeof payload === "string") setEvalText((p) => p + payload);
+            } catch { /* skip */ }
+          }
+        }
+      }
+      setEvalDone(true);
+      // Reload past evaluations to include the new one.
+      api<EvaluationRow[]>(`/api/specs/${specId}/evaluations`)
+        .then(setPastEvals)
+        .catch(() => {});
+    } catch {
+      toast("Evaluation failed — try again.", "danger");
+    } finally {
+      setEvalStreaming(false);
+    }
   }
 
   async function requestReview() {
@@ -191,6 +272,89 @@ export function SignoffPanel({
           </li>
         )}
       </ul>
+
+      {/* Evaluate launch — visible once spec has at least one approval */}
+      {counts.approved > 0 && (
+        <div className={styles.evalSection}>
+          <div className={styles.evalHeader}>
+            <h4 className={styles.evalTitle}>Evaluate launch</h4>
+            <p className={styles.evalSubtext}>
+              Generate a post-launch evaluation by comparing this spec against analytics data.
+            </p>
+          </div>
+
+          <div className={styles.evalControls}>
+            {analyticsConns.length > 0 ? (
+              <Select
+                value={selectedConn}
+                onValueChange={setSelectedConn}
+                options={analyticsConns.map((c) => {
+                  let host = c.mcpUrl;
+                  try { host = new URL(c.mcpUrl).hostname; } catch { /* use raw url */ }
+                  return { value: c.id, label: `${c.target} (${host})` };
+                })}
+                ariaLabel="Analytics connection"
+              />
+            ) : (
+              <p className={styles.evalNoConn}>
+                Connect PostHog in{" "}
+                <a href="/connections" className={styles.evalConnLink}>
+                  Settings → Connections
+                </a>{" "}
+                to pull live analytics data.
+              </p>
+            )}
+            <Button
+              variant="primary"
+              onClick={startEvaluation}
+              busy={evalStreaming}
+            >
+              Generate evaluation
+            </Button>
+          </div>
+
+          {(evalText || evalStreaming) && (
+            <pre className={styles.evalPre}>
+              {evalText}
+              {evalStreaming && <span className={styles.evalCursor}>▋</span>}
+            </pre>
+          )}
+
+          {evalDone && evalText && (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                navigator.clipboard.writeText(evalText);
+                toast("Evaluation copied.", "success");
+              }}
+            >
+              Copy evaluation
+            </Button>
+          )}
+
+          {pastEvals.length > 0 && (
+            <details className={styles.pastEvals}>
+              <summary className={styles.pastEvalsSummary}>
+                {pastEvals.length} past evaluation{pastEvals.length === 1 ? "" : "s"}
+              </summary>
+              <ul className={styles.pastEvalList}>
+                {pastEvals.map((ev) => (
+                  <li key={ev.id} className={styles.pastEvalItem}>
+                    <span className={styles.pastEvalDate}>
+                      {new Date(ev.generatedAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </span>
+                    <pre className={styles.pastEvalPre}>{ev.report}</pre>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
+        </div>
+      )}
     </section>
   );
 }

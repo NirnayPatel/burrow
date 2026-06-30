@@ -26,6 +26,9 @@ export const TARGET_DEFAULTS: Record<string, { createTool: string; externalIdFie
   slack: { createTool: "slack_post_message", externalIdField: "ts", label: "Slack" },
   // Generic target for self-hosted / custom MCP servers and our test mock.
   custom: { createTool: "create_issue", externalIdField: "key", label: "Custom MCP" },
+  // Analytics targets — connected to evaluate shipped specs against success metrics.
+  posthog: { createTool: "posthog_query_events", externalIdField: "id", label: "PostHog" },
+  amplitude: { createTool: "amplitude_query_events", externalIdField: "id", label: "Amplitude" },
 };
 
 export async function withMcpClient<T>(

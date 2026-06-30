@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import * as RDialog from "@radix-ui/react-dialog";
 import { api } from "../../lib/api";
 import { AppNav } from "../../components/app-nav";
 import { PageShell } from "../../components/page-shell";
@@ -18,6 +19,12 @@ import { useToast } from "../../components/toast";
 import styles from "./feedback.module.css";
 
 // ─── types ────────────────────────────────────────────────────────────────────
+
+type IngestKey = {
+  id: string;
+  label: string;
+  createdAt: string;
+};
 
 type Sentiment = "positive" | "neutral" | "negative" | "mixed";
 
@@ -125,6 +132,12 @@ export default function FeedbackPage() {
   const [clustering, setClustering] = useState(false);
   const [noProviderKey, setNoProviderKey] = useState(false);
 
+  // VoC report streaming state
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportText, setReportText] = useState("");
+  const [reportStreaming, setReportStreaming] = useState(false);
+  const [reportDone, setReportDone] = useState(false);
+
   // Add form state
   const [addText, setAddText] = useState("");
   const [addSource, setAddSource] = useState("manual");
@@ -134,6 +147,20 @@ export default function FeedbackPage() {
 
   // Delete confirm
   const [deleteTarget, setDeleteTarget] = useState<FeedbackItem | null>(null);
+
+  // Ingest key management (admin only)
+  const [ingestKeys, setIngestKeys] = useState<IngestKey[] | null>(null);
+  const [addKeyOpen, setAddKeyOpen] = useState(false);
+  const [keyLabel, setKeyLabel] = useState("");
+  const [keyBusy, setKeyBusy] = useState(false);
+  const [rawKey, setRawKey] = useState<string | null>(null);
+  const [revokeTarget, setRevokeTarget] = useState<IngestKey | null>(null);
+
+  function loadIngestKeys() {
+    api<IngestKey[]>("/api/ingest-keys")
+      .then(setIngestKeys)
+      .catch(() => setIngestKeys([]));
+  }
 
   function loadItems() {
     api<FeedbackItem[]>("/api/feedback")
@@ -157,7 +184,10 @@ export default function FeedbackPage() {
     loadItems();
     loadThemes();
     api<{ role: string }>("/api/me")
-      .then((me) => setRole(me.role))
+      .then((me) => {
+        setRole(me.role);
+        if (me.role === "admin") loadIngestKeys();
+      })
       .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -245,6 +275,96 @@ export default function FeedbackPage() {
     }
   }
 
+  // ── VoC report ──────────────────────────────────────────────────────────
+
+  async function generateReport() {
+    setReportText("");
+    setReportDone(false);
+    setReportStreaming(true);
+    setReportOpen(true);
+    try {
+      const res = await fetch("/api/feedback/report", {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const data = await res.json() as { error?: string };
+        if (data.error === "no_provider_key") {
+          setNoProviderKey(true);
+        } else {
+          toast(data.error ?? "Report failed — try again.", "danger");
+        }
+        setReportOpen(false);
+        return;
+      }
+      const reader = res.body?.getReader();
+      if (!reader) return;
+      const decoder = new TextDecoder();
+      let buf = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split("\n");
+        buf = lines.pop() ?? "";
+        for (const line of lines) {
+          if (line.startsWith("data:")) {
+            try {
+              const payload = JSON.parse(line.slice(5).trim()) as string | { message?: string };
+              if (typeof payload === "string") {
+                setReportText((prev) => prev + payload);
+              }
+            } catch { /* non-JSON SSE line (event:) — skip */ }
+          }
+          if (line === "event:done" || line.startsWith("event: done")) {
+            setReportDone(true);
+          }
+        }
+      }
+      setReportDone(true);
+    } catch {
+      toast("Report generation failed — try again.", "danger");
+      setReportOpen(false);
+    } finally {
+      setReportStreaming(false);
+    }
+  }
+
+  // ── ingest key CRUD ─────────────────────────────────────────────────────
+
+  async function createIngestKey(e: React.FormEvent) {
+    e.preventDefault();
+    if (!keyLabel.trim()) return;
+    setKeyBusy(true);
+    try {
+      const result = await api<{ id: string; rawKey: string }>("/api/ingest-keys", {
+        method: "POST",
+        body: JSON.stringify({ label: keyLabel.trim() }),
+      });
+      setRawKey(result.rawKey);
+      setAddKeyOpen(false);
+      setKeyLabel("");
+      loadIngestKeys();
+    } catch {
+      toast("Failed to create key — try again.", "danger");
+    } finally {
+      setKeyBusy(false);
+    }
+  }
+
+  async function revokeIngestKey() {
+    if (!revokeTarget) return;
+    try {
+      await api(`/api/ingest-keys/${revokeTarget.id}`, { method: "DELETE" });
+      toast(`Key "${revokeTarget.label}" revoked.`, "default");
+      loadIngestKeys();
+    } catch {
+      toast("Revoke failed — try again.", "danger");
+    } finally {
+      setRevokeTarget(null);
+    }
+  }
+
   // ─── render ──────────────────────────────────────────────────────────────
 
   return (
@@ -271,6 +391,15 @@ export default function FeedbackPage() {
                 ) : (
                   <Button variant="secondary" onClick={cluster}>
                     Re-cluster with AI
+                  </Button>
+                )}
+                {themes !== null && themes.length > 0 && (
+                  <Button
+                    variant="primary"
+                    onClick={generateReport}
+                    busy={reportStreaming}
+                  >
+                    Generate VoC Report
                   </Button>
                 )}
               </div>
@@ -475,6 +604,223 @@ export default function FeedbackPage() {
           confirmLabel="Delete"
           danger
           onConfirm={deleteItem}
+        />
+
+        {/* ── VoC Report modal ─────────────────────────────────────── */}
+        <RDialog.Root open={reportOpen} onOpenChange={(open) => { if (!reportStreaming) setReportOpen(open); }}>
+          <RDialog.Portal>
+            <RDialog.Overlay className={styles.overlay} />
+            <RDialog.Content
+              className={styles.reportDialogContent}
+              aria-describedby="voc-report-desc"
+            >
+              <div className={styles.reportDialogHeader}>
+                <RDialog.Title className={styles.dialogTitle}>
+                  Voice-of-Customer Report
+                </RDialog.Title>
+                {reportStreaming && <ThinkingIndicator label="Generating" />}
+              </div>
+              <RDialog.Description id="voc-report-desc" className={styles.dialogDesc}>
+                AI-generated report from your clustered feedback themes.
+              </RDialog.Description>
+              <pre className={styles.reportPre}>
+                {reportText}
+                {reportStreaming && <span className={styles.reportCursor}>▋</span>}
+              </pre>
+              <div className={styles.dialogActions}>
+                {reportDone && (
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      navigator.clipboard.writeText(reportText);
+                      toast("Report copied to clipboard.", "success");
+                    }}
+                  >
+                    Copy
+                  </Button>
+                )}
+                <RDialog.Close asChild>
+                  <Button variant="primary" onClick={() => !reportStreaming && setReportOpen(false)}>
+                    {reportStreaming ? "Generating…" : "Close"}
+                  </Button>
+                </RDialog.Close>
+              </div>
+            </RDialog.Content>
+          </RDialog.Portal>
+        </RDialog.Root>
+
+        {/* ── DATA SOURCES zone (admin only) ───────────────────────── */}
+        {isAdmin && (
+          <section className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <div className={styles.sectionHeaderText}>
+                <h2 className={styles.sectionHeading}>Data sources</h2>
+                <p className={styles.sectionSubtext}>
+                  Ingest keys let external tools (n8n, Zapier, custom scripts)
+                  push feedback to Burrow. Each key is shown once on creation.
+                </p>
+              </div>
+              <div className={styles.sectionActions}>
+                <Button variant="secondary" onClick={() => setAddKeyOpen(true)}>
+                  Add data source
+                </Button>
+              </div>
+            </div>
+
+            {/* n8n setup card */}
+            <div className={styles.ingestSetupCard}>
+              <div className={styles.ingestSetupTitle}>
+                Endpoint for n8n / Zapier / custom scripts
+              </div>
+              <code className={styles.ingestEndpoint}>
+                POST /api/ingest/feedback
+              </code>
+              <p className={styles.ingestSetupDesc}>
+                Send <code>x-burrow-ingest-key: &lt;key&gt;</code> and a JSON
+                body: <code>{"{"} items: [{"{"}source, text, externalId{"}"}]{" }"}
+                </code>. See{" "}
+                <Link href="/docs/integrations" className={styles.bannerLink}>
+                  docs/integrations.md
+                </Link>{" "}
+                for n8n workflow examples.
+              </p>
+            </div>
+
+            {/* Key list */}
+            {ingestKeys === null ? (
+              <ul className={styles.keyList}>
+                {[1, 2].map((i) => (
+                  <li key={i} className={styles.keySkeletonRow}>
+                    <Skeleton height={14} width={120} />
+                    <Skeleton height={12} width={80} />
+                  </li>
+                ))}
+              </ul>
+            ) : ingestKeys.length === 0 ? (
+              <p className={styles.emptyKeys}>No data sources yet.</p>
+            ) : (
+              <ul className={styles.keyList}>
+                {ingestKeys.map((k) => (
+                  <li key={k.id} className={styles.keyRow}>
+                    <div className={styles.keyInfo}>
+                      <span className={styles.keyLabel}>{k.label}</span>
+                      <span className={styles.keyDate}>
+                        Created{" "}
+                        {new Date(k.createdAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </span>
+                    </div>
+                    <Button
+                      variant="danger"
+                      onClick={() => setRevokeTarget(k)}
+                      aria-label={`Revoke key ${k.label}`}
+                    >
+                      Revoke
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
+
+        {/* ── Add ingest key dialog ─────────────────────────────────── */}
+        <RDialog.Root open={addKeyOpen} onOpenChange={setAddKeyOpen}>
+          <RDialog.Portal>
+            <RDialog.Overlay className={styles.overlay} />
+            <RDialog.Content
+              className={styles.dialogContent}
+              aria-describedby="add-key-desc"
+            >
+              <RDialog.Title className={styles.dialogTitle}>
+                Add data source
+              </RDialog.Title>
+              <RDialog.Description id="add-key-desc" className={styles.dialogDesc}>
+                Give this key a label (e.g. "n8n production" or "Zapier"). The
+                raw key is shown once — copy it immediately.
+              </RDialog.Description>
+              <form onSubmit={createIngestKey} className={styles.dialogForm}>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel} htmlFor="key-label">
+                    Label
+                  </label>
+                  <Input
+                    id="key-label"
+                    placeholder="n8n production"
+                    value={keyLabel}
+                    onChange={(e) => setKeyLabel(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className={styles.dialogActions}>
+                  <RDialog.Close asChild>
+                    <Button variant="secondary">Cancel</Button>
+                  </RDialog.Close>
+                  <Button type="submit" variant="primary" busy={keyBusy}>
+                    Create key
+                  </Button>
+                </div>
+              </form>
+            </RDialog.Content>
+          </RDialog.Portal>
+        </RDialog.Root>
+
+        {/* ── Raw key reveal dialog (shown ONCE on creation) ─────────── */}
+        <RDialog.Root open={rawKey !== null} onOpenChange={(open) => !open && setRawKey(null)}>
+          <RDialog.Portal>
+            <RDialog.Overlay className={styles.overlay} />
+            <RDialog.Content
+              className={styles.dialogContent}
+              aria-describedby="raw-key-desc"
+            >
+              <RDialog.Title className={styles.dialogTitle}>
+                Copy your key now
+              </RDialog.Title>
+              <RDialog.Description id="raw-key-desc" className={styles.dialogDesc}>
+                This key will not be shown again. Copy it and store it securely.
+              </RDialog.Description>
+              <div className={styles.rawKeyWrapper}>
+                <Input
+                  id="raw-key-value"
+                  value={rawKey ?? ""}
+                  readOnly
+                  autoFocus
+                  className={styles.rawKeyInput}
+                  onFocus={(e) => (e.target as HTMLInputElement).select()}
+                />
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    if (rawKey) {
+                      navigator.clipboard.writeText(rawKey);
+                      toast("Key copied to clipboard.", "success");
+                    }
+                  }}
+                >
+                  Copy
+                </Button>
+              </div>
+              <div className={styles.dialogActions}>
+                <RDialog.Close asChild>
+                  <Button variant="primary">Done</Button>
+                </RDialog.Close>
+              </div>
+            </RDialog.Content>
+          </RDialog.Portal>
+        </RDialog.Root>
+
+        {/* ── Revoke confirm ───────────────────────────────────────────── */}
+        <ConfirmDialog
+          open={revokeTarget !== null}
+          onOpenChange={(open) => !open && setRevokeTarget(null)}
+          title={`Revoke "${revokeTarget?.label}"?`}
+          body="Any workflows using this key will stop ingesting. You can create a new key at any time."
+          confirmLabel="Revoke"
+          danger
+          onConfirm={revokeIngestKey}
         />
       </PageShell>
     </>

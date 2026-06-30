@@ -11,5 +11,25 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+  # Optional: n8n workflow automation sidecar for feedback ingestion.
+  # Pulls from Gong, Zendesk, Intercom, Amplitude, and 400+ other tools,
+  # then POSTs normalized payloads to /api/ingest/feedback.
+  # Uncomment to enable. Generate an ingest key first: Feedback → Data sources.
+  #
+  # n8n:
+  #   image: n8nio/n8n:latest
+  #   ports:
+  #     - "5678:5678"
+  #   environment:
+  #     - N8N_BASIC_AUTH_ACTIVE=true
+  #     - N8N_BASIC_AUTH_USER=admin
+  #     - N8N_BASIC_AUTH_PASSWORD=changeme   # Change before exposing publicly
+  #     - WEBHOOK_URL=http://n8n:5678        # Internal URL for n8n self-referencing
+  #   volumes:
+  #     - n8n_data:/home/node/.n8n
+  #   depends_on:
+  #     - postgres
+
 volumes:
   pgdata:
+  # n8n_data:   # Uncomment when enabling n8n above

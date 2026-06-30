@@ -1,4 +1,4 @@
-import { createHmac } from "node:crypto";
+import { createHmac, timingSafeEqual, randomBytes } from "node:crypto";
 import { serve } from "@hono/node-server";
 import { RESPONSE_ALREADY_SENT } from "@hono/node-server/utils/response";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -6,7 +6,7 @@ import { authForToken, buildMcpServer, agentNameByToken } from "./mcp.js";
 import { Hono, type Context } from "hono";
 import { cors } from "hono/cors";
 import { streamSSE } from "hono/streaming";
-import { desc, eq, and, max, ne, ilike, or } from "drizzle-orm";
+import { desc, eq, and, max, ne, ilike, or, inArray } from "drizzle-orm";
 import {
   specs,
   orgs,
@@ -26,6 +26,9 @@ import {
   feedbackItems,
   feedbackThemes,
   feedbackItemThemes,
+  ingestKeys,
+  ingestMappings,
+  evaluations,
   competitors,
   marketSignals,
   initiatives,
@@ -68,6 +71,9 @@ import {
   streamAssist,
   generateInsights,
   clusterFeedback,
+  generateVocReport,
+  generateOpportunityInsights,
+  generateEvaluation,
   summarizeSignal,
   NoProviderKeyError,
 } from "./ai.js";
@@ -221,6 +227,85 @@ function mapExternalStatus(external: string): (typeof TASK_STATUSES)[number] | n
   if (["inreview", "review"].includes(s)) return "review";
   return null;
 }
+
+// Feedback ingest webhook — accepts normalized feedback items from n8n or any
+// HTTP client. Auth: x-burrow-ingest-key header (raw key, constant-time compare
+// against all org keys). Outside cookie middleware; no Burrow session required.
+app.post("/api/ingest/feedback", async (c) => {
+  const rawKey = c.req.header("x-burrow-ingest-key");
+  if (!rawKey) return c.json({ error: "x-burrow-ingest-key header required" }, 401);
+
+  // Load all ingest keys and find a match (constant-time comparison to prevent timing attacks).
+  const allKeys = await db.select().from(ingestKeys);
+  let matchedOrgId: string | null = null;
+  const rawBuf = Buffer.from(rawKey);
+  for (const k of allKeys) {
+    try {
+      const decrypted = decryptSecret(k.keyEncrypted);
+      const decryptedBuf = Buffer.from(decrypted);
+      if (rawBuf.length === decryptedBuf.length && timingSafeEqual(rawBuf, decryptedBuf)) {
+        matchedOrgId = k.orgId;
+        break;
+      }
+    } catch {
+      // decryption failure = key mismatch, continue
+    }
+  }
+  if (!matchedOrgId) return c.json({ error: "invalid ingest key" }, 401);
+  const orgId = matchedOrgId;
+
+  type IngestItem = { source?: string; customer?: string; segment?: string; text: string; externalId: string };
+  const body = await c.req.json<{ items: IngestItem[] }>().catch(() => ({ items: [] as IngestItem[] }));
+  if (!Array.isArray(body.items) || body.items.length === 0) {
+    return c.json({ error: "items array required" }, 400);
+  }
+
+  let inserted = 0;
+  let skipped = 0;
+
+  for (const item of body.items) {
+    if (!item.text?.trim() || !item.externalId?.trim()) { skipped++; continue; }
+    const source = (FEEDBACK_SOURCES as readonly string[]).includes(item.source ?? "") ? item.source! : "manual";
+
+    // Dedup check
+    const existing = await db
+      .select({ id: ingestMappings.id })
+      .from(ingestMappings)
+      .where(and(
+        eq(ingestMappings.orgId, orgId),
+        eq(ingestMappings.externalId, item.externalId),
+        eq(ingestMappings.source, source),
+      ))
+      .limit(1);
+
+    if (existing.length > 0) { skipped++; continue; }
+
+    const [feedback] = await db.insert(feedbackItems).values({
+      orgId,
+      source: source as (typeof FEEDBACK_SOURCES)[number],
+      customer: item.customer ?? null,
+      segment: item.segment ?? null,
+      text: item.text.trim(),
+    }).returning({ id: feedbackItems.id });
+
+    const mapping = await db.insert(ingestMappings).values({
+      orgId,
+      externalId: item.externalId.trim(),
+      feedbackItemId: feedback.id,
+      source,
+    }).onConflictDoNothing().returning({ id: ingestMappings.id });
+    // If conflict (concurrent duplicate ingest), the feedbackItem was already inserted
+    // but the mapping was not. Clean up the orphaned feedbackItem.
+    if (mapping.length === 0) {
+      await db.delete(feedbackItems).where(eq(feedbackItems.id, feedback.id));
+      skipped++;
+      continue;
+    }
+    inserted++;
+  }
+
+  return c.json({ inserted, skipped });
+});
 
 // CLI device-code auth (#19). start + token poll are unauthenticated (the CLI
 // has no session yet); confirm is authenticated (the browser does).
@@ -377,6 +462,11 @@ app.patch("/api/specs/:id", async (c) => {
   if (body.status && !(SPEC_STATUSES as readonly string[]).includes(body.status)) {
     return c.json({ error: `invalid status: ${body.status}` }, 400);
   }
+  const [existing] = await db
+    .select({ id: specs.id, status: specs.status, displayId: specs.displayId, title: specs.title })
+    .from(specs)
+    .where(and(eq(specs.id, c.req.param("id")), eq(specs.orgId, c.get("orgId"))));
+  if (!existing) return c.json({ error: "not found" }, 404);
   const [row] = await db
     .update(specs)
     .set({
@@ -386,9 +476,21 @@ app.patch("/api/specs/:id", async (c) => {
         : {}),
       updatedAt: new Date(),
     })
-    .where(and(eq(specs.id, c.req.param("id")), eq(specs.orgId, c.get("orgId"))))
+    .where(eq(specs.id, existing.id))
     .returning();
-  return row ? c.json(row) : c.json({ error: "not found" }, 404);
+  if (!row) return c.json({ error: "not found" }, 404);
+  if (body.status !== undefined && body.status !== existing.status) {
+    await logEvent({
+      orgId: c.get("orgId"),
+      actorType: "human",
+      actorName: c.get("userName"),
+      kind: "spec_status_changed",
+      summary: `${existing.displayId} moved to ${body.status}`,
+      specId: existing.id,
+      detail: { oldStatus: existing.status, newStatus: body.status },
+    });
+  }
+  return c.json(row);
 });
 
 // ---------- Org key vault (admin only) ----------
@@ -1203,6 +1305,174 @@ app.post("/api/feedback/themes/:id/create-spec", async (c) => {
     specId: spec.id,
   });
   return c.json(spec, 201);
+});
+
+// ---------- VoC Report (Gap 3) ----------
+// Streams a structured markdown VoC report from clustered themes + verbatim
+// quotes. Admin-only. Up to 3 representative quotes per theme, newest first.
+// Degrades gracefully when no provider key is configured (returns 422).
+
+app.post("/api/feedback/report", async (c) => {
+  if (c.get("role") !== "admin") return c.json({ error: "admin only" }, 403);
+  const orgId = c.get("orgId");
+
+  const themes = await db
+    .select()
+    .from(feedbackThemes)
+    .where(eq(feedbackThemes.orgId, orgId))
+    .orderBy(desc(feedbackThemes.size));
+
+  if (themes.length === 0) return c.json({ error: "no themes — cluster feedback first" }, 400);
+
+  // Pull up to 3 representative quotes per theme (newest items).
+  const themeIds = themes.map((t) => t.id);
+  const itemRows = await db
+    .select({
+      themeId: feedbackItemThemes.themeId,
+      text: feedbackItems.text,
+    })
+    .from(feedbackItemThemes)
+    .innerJoin(feedbackItems, eq(feedbackItemThemes.itemId, feedbackItems.id))
+    .where(and(inArray(feedbackItemThemes.themeId, themeIds), eq(feedbackItems.orgId, orgId)))
+    .orderBy(desc(feedbackItems.createdAt));
+
+  // Group quotes by theme, cap at 3.
+  const quotesByTheme = new Map<string, string[]>();
+  for (const row of itemRows) {
+    const existing = quotesByTheme.get(row.themeId) ?? [];
+    if (existing.length < 3) {
+      quotesByTheme.set(row.themeId, [...existing, row.text]);
+    }
+  }
+
+  const themeInputs = themes.map((t) => ({
+    label: t.label,
+    summary: t.summary,
+    size: t.size,
+    sentiment: t.sentiment ?? "neutral",
+    hasSpec: t.specId !== null,
+    quotes: quotesByTheme.get(t.id) ?? [],
+  }));
+
+  let result: Awaited<ReturnType<typeof generateVocReport>>;
+  try {
+    result = await generateVocReport(orgId, themeInputs);
+  } catch (err) {
+    if (err instanceof NoProviderKeyError) return c.json({ error: "no_provider_key" }, 422);
+    return c.json({ error: (err as Error).message }, 400);
+  }
+
+  return streamSSE(c, async (sse) => {
+    try {
+      for await (const delta of result.textStream) {
+        await sse.writeSSE({ event: "delta", data: JSON.stringify(delta) });
+      }
+      await sse.writeSSE({ event: "done", data: "{}" });
+    } catch (err) {
+      await sse.writeSSE({ event: "error", data: JSON.stringify({ message: (err as Error).message }) });
+    }
+  });
+});
+
+// ---------- Opportunities (Gap 4) ----------
+// Derived from feedbackThemes + marketSignals + specs — no materialized table.
+// Scoring formula:
+//   score = (theme.size × sentiment_weight) + Σ severity_weight[signal.severity] − (10 if has spec)
+// sentiment weights: positive 0.5 | neutral 1.0 | mixed 1.2 | negative 1.5
+// severity weights:  low 1 | medium 2 | high 4
+
+const SENTIMENT_WEIGHT: Record<string, number> = {
+  positive: 0.5,
+  neutral: 1.0,
+  mixed: 1.2,
+  negative: 1.5,
+};
+const SEVERITY_WEIGHT: Record<string, number> = { low: 1, medium: 2, high: 4 };
+
+app.get("/api/opportunities", async (c) => {
+  const orgId = c.get("orgId");
+
+  const themes = await db
+    .select()
+    .from(feedbackThemes)
+    .where(eq(feedbackThemes.orgId, orgId));
+
+  const signals = await db
+    .select()
+    .from(marketSignals)
+    .where(eq(marketSignals.orgId, orgId));
+
+  const scored = themes.map((t) => {
+    const baseScore = t.size * (SENTIMENT_WEIGHT[t.sentiment ?? "neutral"] ?? 1.0);
+    const signalBoost = signals
+      .filter((s) => s.summary.toLowerCase().includes(t.label.toLowerCase()))
+      .reduce((sum, s) => sum + (SEVERITY_WEIGHT[s.severity] ?? 1), 0);
+    const specPenalty = t.specId ? 10 : 0;
+    return {
+      id: t.id,
+      label: t.label,
+      summary: t.summary,
+      score: Math.round((baseScore + signalBoost - specPenalty) * 10) / 10,
+      sentiment: t.sentiment,
+      size: t.size,
+      hasSpec: t.specId !== null,
+      specId: t.specId,
+    };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  return c.json(scored.slice(0, 20));
+});
+
+app.post("/api/opportunities/insights", async (c) => {
+  const orgId = c.get("orgId");
+  const body = await c.req.json<{ opportunities: { label: string; summary: string; score: number; sentiment: string; size: number; hasSpec: boolean }[] }>();
+  if (!body.opportunities?.length) return c.json({ narratives: [] });
+  try {
+    const narratives = await generateOpportunityInsights(orgId, body.opportunities);
+    return c.json({ narratives: narratives ?? [] });
+  } catch (err) {
+    if (err instanceof NoProviderKeyError) return c.json({ narratives: [] });
+    return c.json({ narratives: [] });
+  }
+});
+
+// ---------- Ingest API keys (Gap 1: feedback pipeline auth) ----------
+
+app.get("/api/ingest-keys", async (c) => {
+  const rows = await db
+    .select({ id: ingestKeys.id, label: ingestKeys.label, createdAt: ingestKeys.createdAt })
+    .from(ingestKeys)
+    .where(eq(ingestKeys.orgId, c.get("orgId")));
+  return c.json(rows);
+});
+
+app.post("/api/ingest-keys", async (c) => {
+  if (c.get("role") !== "admin") return c.json({ error: "admin only" }, 403);
+  const body = await c.req.json<{ label?: string }>().catch(() => ({} as { label?: string }));
+  if (!body.label?.trim()) return c.json({ error: "label required" }, 400);
+  const rawKey = randomBytes(32).toString("hex");
+  const [row] = await db
+    .insert(ingestKeys)
+    .values({
+      orgId: c.get("orgId"),
+      keyEncrypted: encryptSecret(rawKey),
+      label: body.label.trim(),
+      createdBy: c.get("userId"),
+    })
+    .returning({ id: ingestKeys.id, label: ingestKeys.label, createdAt: ingestKeys.createdAt });
+  // rawKey shown once — never retrievable again
+  return c.json({ ...row, rawKey }, 201);
+});
+
+app.delete("/api/ingest-keys/:id", async (c) => {
+  if (c.get("role") !== "admin") return c.json({ error: "admin only" }, 403);
+  const deleted = await db
+    .delete(ingestKeys)
+    .where(and(eq(ingestKeys.id, c.req.param("id")), eq(ingestKeys.orgId, c.get("orgId"))))
+    .returning({ id: ingestKeys.id });
+  if (deleted.length === 0) return c.json({ error: "not found" }, 404);
+  return c.json({ ok: true });
 });
 
 // ---------- Market signals (#1): competitors + AI-summarized moves ----------
@@ -2079,6 +2349,21 @@ app.delete("/api/connections/:id", async (c) => {
   return c.json({ ok: true });
 });
 
+// Test an existing connection — re-probes the MCP server and returns its tool list.
+app.post("/api/connections/:id/probe", async (c) => {
+  const [conn] = await db
+    .select()
+    .from(connections)
+    .where(and(eq(connections.id, c.req.param("id")), eq(connections.orgId, c.get("orgId"))));
+  if (!conn) return c.json({ error: "not found" }, 404);
+  try {
+    const tools = await probeConnection(conn.config as ConnectionConfig);
+    return c.json({ ok: true, tools });
+  } catch (err) {
+    return c.json({ ok: false, error: (err as Error).message }, 400);
+  }
+});
+
 // Push a spec's latest Breakdown tasks to the connected tracker, recording a
 // sync_mapping per task so inbound webhooks can flow status back.
 app.post("/api/specs/:id/push/:connectionId", async (c) => {
@@ -2196,6 +2481,81 @@ app.post("/api/specs/:id/signoffs", async (c) => {
     detail: { verdict: body.verdict },
   });
   return c.json(row, 201);
+});
+
+// ---------- Post-launch evaluations (Gap 5) ----------
+// Streams an AI evaluation of a shipped spec against real analytics data.
+// connectionId (optional) identifies a connected PostHog MCP — if present,
+// future implementation will query it via withMcpClient(); for now the
+// connection label is noted in the report as the declared data source.
+
+app.get("/api/specs/:id/evaluations", async (c) => {
+  const spec = await ownedSpec(c);
+  if (!spec) return c.json({ error: "not found" }, 404);
+  const rows = await db
+    .select()
+    .from(evaluations)
+    .where(and(eq(evaluations.specId, spec.id), eq(evaluations.orgId, c.get("orgId"))))
+    .orderBy(desc(evaluations.generatedAt));
+  return c.json(rows);
+});
+
+app.post("/api/specs/:id/evaluate", async (c) => {
+  const spec = await ownedSpec(c);
+  if (!spec) return c.json({ error: "not found" }, 404);
+  const orgId = c.get("orgId");
+  const body = await c.req.json<{ connectionId?: string; analyticsData?: string }>().catch(() => ({} as { connectionId?: string; analyticsData?: string }));
+
+  let analyticsData = body.analyticsData ?? "";
+
+  // If a PostHog MCP connection is provided, note it in the report.
+  // Full posthog_query_events call comes after withMcpClient() is wired per org.
+  if (body.connectionId && !analyticsData) {
+    const [conn] = await db
+      .select()
+      .from(connections)
+      .where(and(eq(connections.id, body.connectionId), eq(connections.orgId, orgId)));
+    if (conn) {
+      analyticsData = `Data source: ${conn.target} connection (${conn.id}). Full analytics query via MCP requires the PostHog integration to be active.`;
+    }
+  }
+
+  if (!analyticsData) {
+    analyticsData = "No analytics data provided. Review your PostHog or analytics connection in Settings → Connections.";
+  }
+
+  const specBody = await import("./ai.js").then((m) => m.specText(spec.ydocId));
+
+  let stream: Awaited<ReturnType<typeof generateEvaluation>>;
+  try {
+    stream = await generateEvaluation(orgId, spec.title, specBody, analyticsData);
+  } catch (err) {
+    if (err instanceof NoProviderKeyError) return c.json({ error: "no_provider_key" }, 422);
+    return c.json({ error: (err as Error).message }, 400);
+  }
+
+  // Accumulate full text so we can persist the evaluation on completion.
+  let fullReport = "";
+
+  return streamSSE(c, async (sse) => {
+    try {
+      for await (const delta of stream.textStream) {
+        fullReport += delta;
+        await sse.writeSSE({ event: "delta", data: JSON.stringify(delta) });
+      }
+      // Persist the completed evaluation.
+      await db.insert(evaluations).values({
+        specId: spec.id,
+        orgId,
+        connectionId: body.connectionId ?? null,
+        report: fullReport,
+        triggeredBy: c.get("userId"),
+      });
+      await sse.writeSSE({ event: "done", data: "{}" });
+    } catch (err) {
+      await sse.writeSSE({ event: "error", data: JSON.stringify({ message: (err as Error).message }) });
+    }
+  });
 });
 
 // ---------- Breakdowns ----------

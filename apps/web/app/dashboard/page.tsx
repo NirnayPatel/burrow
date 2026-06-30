@@ -33,6 +33,24 @@ type Dashboard = {
   recentActivity: ActivityEvent[];
 };
 
+type Opportunity = {
+  id: string;
+  label: string;
+  summary: string;
+  score: number;
+  sentiment: string | null;
+  size: number;
+  hasSpec: boolean;
+  specId: string | null;
+};
+
+const SENTIMENT_COLOR: Record<string, string> = {
+  positive: "var(--color-success)",
+  neutral: "var(--color-text-muted)",
+  negative: "var(--color-danger)",
+  mixed: "var(--color-warning)",
+};
+
 function greeting(): string {
   const h = new Date().getHours();
   if (h < 12) return "Good morning";
@@ -54,11 +72,26 @@ export default function DashboardPage() {
   const toast = useToast();
   const [data, setData] = useState<Dashboard | null>(null);
   const [approving, setApproving] = useState<string | null>(null);
+  const [opportunities, setOpportunities] = useState<Opportunity[] | null>(null);
+  const [oppNarratives, setOppNarratives] = useState<string[]>([]);
 
   useEffect(() => {
     api<Dashboard>("/api/dashboard")
       .then(setData)
       .catch(() => router.push("/signin"));
+    api<Opportunity[]>("/api/opportunities")
+      .then((opps) => {
+        setOpportunities(opps.slice(0, 5));
+        if (opps.length > 0) {
+          api<{ narratives: string[] }>("/api/opportunities/insights", {
+            method: "POST",
+            body: JSON.stringify({ opportunities: opps.slice(0, 5) }),
+          })
+            .then((r) => setOppNarratives(r.narratives))
+            .catch(() => {});
+        }
+      })
+      .catch(() => setOpportunities([]));
   }, [router]);
 
   // Act-in-place (UX review #9): approve a sign-off straight from the attention
@@ -234,6 +267,47 @@ export default function DashboardPage() {
                   <span className={styles.suggestionId}>{s.displayId}</span> {s.text}
                 </SuggestionChip>
               ))
+            )}
+          </DashboardCard>
+
+          <DashboardCard title="Opportunities" count={opportunities?.length ?? undefined}>
+            {opportunities === null ? (
+              <>
+                <Skeleton height={48} />
+                <Skeleton height={48} />
+              </>
+            ) : opportunities.length === 0 ? (
+              <p className={styles.cardEmpty}>
+                No themes yet — add feedback and cluster it to see ranked opportunities.
+              </p>
+            ) : (
+              <ul className={styles.oppList}>
+                {opportunities.map((opp, i) => (
+                  <li key={opp.id} className={styles.oppItem}>
+                    <div className={styles.oppHeader}>
+                      <span
+                        className={styles.oppDot}
+                        style={{ background: SENTIMENT_COLOR[opp.sentiment] ?? "currentColor" }}
+                        title={opp.sentiment}
+                      />
+                      <Link href={`/feedback?highlight=${opp.id}`} className={styles.oppLabel}>
+                        {opp.label}
+                      </Link>
+                      <span className={styles.oppScore}>{opp.score}</span>
+                    </div>
+                    {oppNarratives[i] ? (
+                      <p className={styles.oppNarrative}>{oppNarratives[i]}</p>
+                    ) : (
+                      <p className={styles.oppSummary}>{opp.summary}</p>
+                    )}
+                    {opp.specId && (
+                      <Link href={`/specs/${opp.specId}`} className={styles.oppSpecLink}>
+                        View Spec →
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
             )}
           </DashboardCard>
 

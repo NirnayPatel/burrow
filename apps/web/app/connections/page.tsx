@@ -20,11 +20,12 @@ import {
 } from "../../components/connection-card";
 import styles from "./connections.module.css";
 
-// The four featured targets (Jira/Confluence/Slack per 02 priority + custom)
+// Featured targets — shown as primary cards (in order)
 const FEATURED_TARGETS: ConnectionTarget[] = [
   "jira",
   "confluence",
   "slack",
+  "posthog",
   "custom",
 ];
 
@@ -32,6 +33,8 @@ const TARGET_OPTIONS = [
   { value: "jira", label: "Jira" },
   { value: "confluence", label: "Confluence" },
   { value: "slack", label: "Slack" },
+  { value: "posthog", label: "PostHog (analytics)" },
+  { value: "amplitude", label: "Amplitude (analytics)" },
   { value: "custom", label: "Custom MCP server" },
 ];
 
@@ -136,6 +139,19 @@ export default function ConnectionsPage() {
     }
   }
 
+  async function testConnection(id: string): Promise<{ tools: string[] } | { error: string }> {
+    try {
+      const res = await api<{ ok: boolean; tools?: string[]; error?: string }>(
+        `/api/connections/${id}/probe`,
+        { method: "POST" }
+      );
+      if (res.ok && res.tools) return { tools: res.tools };
+      return { error: res.error ?? "unknown error" };
+    } catch (err) {
+      return { error: err instanceof Error ? err.message : "connection failed" };
+    }
+  }
+
   async function removeConnection() {
     if (!removeTarget) return;
     try {
@@ -220,6 +236,7 @@ export default function ConnectionsPage() {
                         const c = connections.find((x) => x.id === id);
                         if (c) setRemoveTarget(c);
                       }}
+                      onTest={conn ? testConnection : undefined}
                     />
                   );
                 })}

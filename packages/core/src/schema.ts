@@ -9,6 +9,7 @@ import {
   customType,
   primaryKey,
   index,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema.js";
 
@@ -365,6 +366,35 @@ export const feedbackItemThemes = pgTable(
   (t) => [primaryKey({ columns: [t.themeId, t.itemId] })],
 );
 
+// Ingest API keys — org-scoped bearer tokens for the POST /api/ingest/feedback
+// webhook. Generated once (shown to admin, never retrievable again), encrypted
+// at rest using the same AES-GCM pattern as providerKeys.
+export const ingestKeys = pgTable("ingest_keys", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  orgId: uuid("org_id").notNull().references(() => orgs.id),
+  keyEncrypted: text("key_encrypted").notNull(),
+  label: text("label").notNull(),
+  createdBy: text("created_by").references(() => user.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Ingest dedup mappings — tracks which external IDs have already been ingested
+// so n8n or other tools can POST idempotently without creating duplicate items.
+export const ingestMappings = pgTable(
+  "ingest_mappings",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    orgId: uuid("org_id").notNull().references(() => orgs.id),
+    externalId: text("external_id").notNull(),
+    feedbackItemId: uuid("feedback_item_id")
+      .notNull()
+      .references(() => feedbackItems.id, { onDelete: "cascade" }),
+    source: text("source").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("ingest_mappings_org_ext_src").on(t.orgId, t.externalId, t.source)],
+);
+
 // Market signals (#1). Track competitors and the moves around them. v1 is
 // manual + paste/upload (no web access — preserves "nothing leaves your box");
 // AI summarizes a pasted article into a typed, severity-scored signal.
@@ -452,7 +482,14 @@ export type RoutineAction =
   // Additive (24-PLATFORM-SHARING §4 Phase 2). The runActions switch grows two
   // arms; existing routines are untouched.
   | { type: "run_skill"; skillSlug: string; params?: Record<string, unknown> }
-  | { type: "run_agent"; agentSlug: string; input?: string };
+  | { type: "run_agent"; agentSlug: string; input?: string }
+  // Gap 1: feedback ingestion observability marker (actual pull happens at n8n).
+  | { type: "sync_feedback"; source: string }
+  // Gap 4: opportunity ranking refresh.
+  | { type: "refresh_opportunities" }
+  // Gap 5: post-launch evaluation scheduling + execution.
+  | { type: "schedule_evaluation"; specId: string; connectionId?: string; delayDays: number }
+  | { type: "run_evaluation"; specId: string; connectionId?: string };
 
 export const routines = pgTable("routines", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -548,6 +585,7 @@ export const routineRuns = pgTable("routine_runs", {
 // actorName is the agent's MCP client name ("claude-code") or a person's name.
 export const EVENT_KINDS = [
   "spec_created",
+  "spec_status_changed",
   "breakdown_generated",
   "task_status_changed",
   "task_picked_up",
@@ -571,4 +609,17 @@ export const events = pgTable("events", {
   summary: text("summary").notNull(),
   detail: jsonb("detail").$type<Record<string, unknown>>(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Gap 5: post-launch evaluation results (append-only, mirrors signoffs pattern).
+// Each row is one evaluation report generated against a shipped spec — either
+// by the routines engine (scheduled) or manually via the Evaluate launch button.
+export const evaluations = pgTable("evaluations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  specId: uuid("spec_id").notNull().references(() => specs.id, { onDelete: "cascade" }),
+  orgId: uuid("org_id").notNull().references(() => orgs.id),
+  connectionId: uuid("connection_id").references(() => connections.id, { onDelete: "set null" }),
+  report: text("report").notNull(),
+  triggeredBy: text("triggered_by").references(() => user.id, { onDelete: "set null" }),
+  generatedAt: timestamp("generated_at").notNull().defaultNow(),
 });

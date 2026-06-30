@@ -310,3 +310,156 @@ export async function clusterFeedback(
   });
   return object;
 }
+
+// Gap 5: Post-launch evaluation. Streams a structured verdict report by
+// comparing the spec's goals against real analytics data (from PostHog MCP or
+// any other tool that can provide a string payload). Grounded in Context Graph.
+// Prompt structure: Summary verdict → Success metrics check → Unexpected signals → Recommendations.
+
+export async function generateEvaluation(
+  orgId: string,
+  specTitle: string,
+  specBody: string,
+  analyticsData: string,
+) {
+  const model = await resolveModel(orgId);
+  const ctx = await contextBlock(orgId, `${specTitle} ${specBody}`);
+
+  return streamText({
+    model,
+    prompt: `You are a senior PM writing a post-launch evaluation for a shipped feature.
+Be direct. Lead with the verdict. No hedge words.${ctx}
+
+## Feature being evaluated
+**${specTitle}**
+
+${specBody || "(no spec body)"}
+
+## Analytics data
+${analyticsData}
+
+---
+
+Write the evaluation in markdown with exactly these sections:
+1. **Verdict** — one sentence: did it work?
+2. **Success metrics check** — cite specific numbers from the analytics data against the spec's goals. Table format if possible.
+3. **Unexpected signals** — what did the data reveal that wasn't in the plan?
+4. **Recommendations** — 2-4 specific next actions (PM/Eng/Design owners).`,
+  });
+}
+
+// Gap 4: Opportunity ranking narratives. Accepts a pre-scored opportunity list
+// and returns one-sentence strategic narrative per item, grounded in Context Graph.
+// Returns null when no provider key — the route degrades gracefully.
+
+export type OpportunityInput = {
+  label: string;
+  summary: string;
+  score: number;
+  sentiment: string;
+  size: number;
+  hasSpec: boolean;
+};
+
+export async function generateOpportunityInsights(
+  orgId: string,
+  opportunities: OpportunityInput[],
+): Promise<string[] | null> {
+  let model: LanguageModel;
+  try {
+    model = await resolveModel(orgId);
+  } catch {
+    return null;
+  }
+  const ctx = await contextBlock(
+    orgId,
+    opportunities.map((o) => `${o.label}: ${o.summary}`).join(". "),
+  );
+  const listText = opportunities
+    .map((o, i) => `[${i}] ${o.label} (score ${o.score}, ${o.sentiment}, ${o.size} items${o.hasSpec ? ", has Spec" : ""})`)
+    .join("\n");
+  const { object } = await generateObject({
+    model,
+    schema: z.object({
+      narratives: z
+        .array(z.string())
+        .describe(
+          "One strategic sentence per opportunity, in the same order as the input list. Direct, no hedge words, grounded in the org's context.",
+        ),
+    }),
+    prompt: `You are a senior PM. For each opportunity below, write ONE sentence explaining its strategic importance to this org. Use the org context to be specific — cite goals, signals, or gaps. No generic advice.${ctx}\n\nOpportunities:\n${listText}`,
+  });
+  return object.narratives;
+}
+
+// Gap 3: Voice-of-Customer report. Streams a structured markdown artifact from
+// clustered themes + representative quotes. Structured:
+//   1. Executive Overview (2-3 sentences)
+//   2. Ranked Themes (verbatim quotes per theme)
+//   3. Gaps (themes with no linked Spec)
+//   4. Recommendations (3-5 prioritized action items)
+//
+// Grounded via contextBlock() so recommendations are aware of existing roadmap.
+// Returns a streamText result — caller handles SSE emission.
+
+export type VocThemeInput = {
+  label: string;
+  summary: string;
+  size: number;
+  sentiment: string;
+  hasSpec: boolean;
+  quotes: string[];
+};
+
+export async function generateVocReport(
+  orgId: string,
+  themes: VocThemeInput[],
+) {
+  const model = await resolveModel(orgId);
+
+  const themeBlocks = themes
+    .map(
+      (t, i) =>
+        `### ${i + 1}. ${t.label} (${t.size} items, ${t.sentiment}${t.hasSpec ? ", has Spec" : ", no Spec yet"})\n` +
+        `${t.summary}\n` +
+        (t.quotes.length > 0
+          ? t.quotes.map((q) => `> "${q}"`).join("\n")
+          : ""),
+    )
+    .join("\n\n");
+
+  const gaps = themes.filter((t) => !t.hasSpec);
+  const gapBlock =
+    gaps.length > 0
+      ? gaps.map((t) => `- **${t.label}**: ${t.summary} (${t.size} items)`).join("\n")
+      : "All themes have an associated Spec.";
+
+  const ctx = await contextBlock(orgId, themes.map((t) => t.label + " " + t.summary).join(". "));
+
+  return streamText({
+    model,
+    prompt: `You are a senior product manager writing a Voice-of-Customer report for the product team.
+Generate a concise, opinionated report in markdown.${ctx}
+
+Structure:
+1. **Executive Overview** — 2-3 sentences: what do customers want most and what's the single biggest risk?
+2. **Ranked Themes** — paste each theme block below, add one sentence of strategic context per theme.
+3. **Gaps** — themes without a Spec. For each, explain the cost of inaction.
+4. **Recommendations** — 3-5 prioritized action items, each with an owner hint (PM/Eng/Design).
+
+Rules:
+- Lead with insight, not methodology.
+- Use verbatim customer quotes where provided — they are the evidence.
+- Be direct. No hedge words.
+
+---
+
+## Themes (${themes.length} total)
+
+${themeBlocks}
+
+## Themes without a Spec (${gaps.length})
+
+${gapBlock}`,
+  });
+}
