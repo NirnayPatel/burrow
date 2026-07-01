@@ -93,6 +93,25 @@ import {
   encryptSecret as encryptConnSecret,
 } from "./connectors.js";
 import { decryptSecret } from "./crypto.js";
+import { sql as drizzleSql } from "drizzle-orm";
+
+// Atomically create a spec with a collision-free SPEC-N displayId.
+// Holds a pg advisory xact lock through the INSERT so concurrent org creates serialize.
+type NewSpec = { orgId: string; title: string; ydocId: string; createdBy?: string | null };
+async function insertSpecWithDisplayId(values: NewSpec) {
+  return await db.transaction(async (tx) => {
+    // Advisory transaction lock — serializes all spec creates per org within this tx.
+    await tx.execute(drizzleSql`SELECT pg_advisory_xact_lock(hashtext(${values.orgId}::text))`);
+    const countResult = await tx.execute<{ n: string }>(drizzleSql`
+      SELECT COALESCE(MAX(CAST(SUBSTRING(display_id FROM 6) AS INTEGER)), 0) + 1 AS n
+      FROM specs WHERE org_id = ${values.orgId}
+    `);
+    // drizzle execute returns QueryResult for node-postgres — rows are in .rows
+    const n = (countResult as any).rows?.[0]?.n ?? 1;
+    const [row] = await tx.insert(specs).values({ ...values, displayId: `SPEC-${n}` }).returning();
+    return row;
+  });
+}
 
 type Env = {
   Variables: {
@@ -427,17 +446,12 @@ app.get("/api/specs", async (c) => {
 
 app.post("/api/specs", async (c) => {
   const body = await c.req.json<{ title?: string }>().catch(() => ({}) as { title?: string });
-  const count = await db.$count(specs, eq(specs.orgId, c.get("orgId")));
-  const [row] = await db
-    .insert(specs)
-    .values({
-      orgId: c.get("orgId"),
-      title: body.title ?? "Untitled spec",
-      displayId: `SPEC-${count + 1}`,
-      ydocId: crypto.randomUUID(),
-      createdBy: c.get("userId"),
-    })
-    .returning();
+  const row = await insertSpecWithDisplayId({
+    orgId: c.get("orgId"),
+    title: body.title ?? "Untitled spec",
+    ydocId: crypto.randomUUID(),
+    createdBy: c.get("userId"),
+  });
   await logEvent({
     orgId: c.get("orgId"),
     actorType: "human",
@@ -1224,9 +1238,11 @@ app.post("/api/feedback", async (c) => {
 
 app.delete("/api/feedback/:id", async (c) => {
   if (c.get("role") !== "admin") return c.json({ error: "admin only" }, 403);
-  await db
+  const deleted = await db
     .delete(feedbackItems)
-    .where(and(eq(feedbackItems.id, c.req.param("id")), eq(feedbackItems.orgId, c.get("orgId"))));
+    .where(and(eq(feedbackItems.id, c.req.param("id")), eq(feedbackItems.orgId, c.get("orgId"))))
+    .returning({ id: feedbackItems.id });
+  if (!deleted.length) return c.json({ error: "not found" }, 404);
   return c.json({ ok: true });
 });
 
@@ -1284,17 +1300,12 @@ app.post("/api/feedback/themes/:id/create-spec", async (c) => {
     .from(feedbackThemes)
     .where(and(eq(feedbackThemes.id, c.req.param("id")), eq(feedbackThemes.orgId, c.get("orgId"))));
   if (!theme) return c.json({ error: "not found" }, 404);
-  const count = await db.$count(specs, eq(specs.orgId, c.get("orgId")));
-  const [spec] = await db
-    .insert(specs)
-    .values({
-      orgId: c.get("orgId"),
-      title: theme.label,
-      displayId: `SPEC-${count + 1}`,
-      ydocId: crypto.randomUUID(),
-      createdBy: c.get("userId"),
-    })
-    .returning();
+  const spec = await insertSpecWithDisplayId({
+    orgId: c.get("orgId"),
+    title: theme.label,
+    ydocId: crypto.randomUUID(),
+    createdBy: c.get("userId"),
+  });
   await db.update(feedbackThemes).set({ specId: spec.id }).where(eq(feedbackThemes.id, theme.id));
   await logEvent({
     orgId: c.get("orgId"),
@@ -1910,11 +1921,7 @@ app.post("/api/chat/threads/:id/confirm", async (c) => {
   let result: unknown;
   if (call.toolName === "create_spec") {
     const args = call.args as { title: string };
-    const count = await db.$count(specs, eq(specs.orgId, c.get("orgId")));
-    const [spec] = await db
-      .insert(specs)
-      .values({ orgId: c.get("orgId"), title: args.title || "Untitled spec", displayId: `SPEC-${count + 1}`, ydocId: crypto.randomUUID(), createdBy: c.get("userId") })
-      .returning();
+    const spec = await insertSpecWithDisplayId({ orgId: c.get("orgId"), title: args.title || "Untitled spec", ydocId: crypto.randomUUID(), createdBy: c.get("userId") });
     await logEvent({ orgId: c.get("orgId"), actorType: "human", actorName: c.get("userName"), kind: "spec_created", summary: `created ${spec.displayId} via chat`, specId: spec.id });
     result = { specId: spec.id, displayId: spec.displayId };
   } else {
@@ -2384,7 +2391,12 @@ app.post("/api/specs/:id/push/:connectionId", async (c) => {
   if (!latest) return c.json({ error: "no breakdown to push — generate one first" }, 400);
   const taskRows = await db.select().from(tasks).where(eq(tasks.breakdownId, latest.id));
 
-  const results = await pushTasks(conn.config as ConnectionConfig, taskRows);
+  let results: Awaited<ReturnType<typeof pushTasks>>;
+  try {
+    results = await pushTasks(conn.config as ConnectionConfig, taskRows);
+  } catch (err) {
+    return c.json({ error: `push failed: ${(err as Error).message}` }, 502);
+  }
   // Record mappings for tasks that got an external id (idempotent-ish: skip dupes)
   for (const r of results) {
     if (!r.externalId) continue;
